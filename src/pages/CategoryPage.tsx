@@ -92,7 +92,7 @@ export function CategoryPage({ type }: Props) {
                 key={`${d.source}-${d.id}-${i}`}
                 bindtap={() => navigate({ name: 'detail', source: d.source, id: d.id })}
               >
-                <VideoCard data={d} />
+                <VideoCard data={d as any} />
               </view>
             ))}
           </view>

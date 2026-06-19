@@ -1,5 +1,5 @@
-// 视频卡片 - 对齐 LunaTV VideoCard 风格
-// 评分徽章动态颜色 + 集数角标 + 进度条
+// 视频卡片 - Selene 风格
+// 评分徽章(粉/金/灰) + 集数角标(绿色) + 进度条 + 来源标签("豆瓣资源")
 import { navigate } from '../lib/router';
 import { imageProxyUrl, getConfig } from '../api/endpoints-helper';
 import type { SearchResult, DoubanItem } from '../api/types';
@@ -15,6 +15,7 @@ type CardData = {
   remarks?: string;
   type_name?: string;
   progress?: number; // 0-100 播放进度
+  douban_id?: string; // 来自豆瓣时显示 "豆瓣资源" 标签
 };
 
 interface Props {
@@ -22,14 +23,23 @@ interface Props {
   width?: 'normal' | 'wide';
 }
 
-// 评分徽章颜色:LunaTV 风格(8.5+金色 / 7.0+蓝色 / 6.0+绿色 / 其他灰色)
+// 评分徽章颜色:Selene 风格(8.5+ 金色 / 6.0+ 玫红 / 其它 灰)
 function getRatingClass(rate?: string): string {
   if (!rate) return '';
   const n = parseFloat(rate);
   if (isNaN(n)) return '';
   if (n >= 8.5) return 'video-card-rating-high';
-  if (n >= 7.0) return 'video-card-rating-mid';
+  if (n >= 6.0) return 'video-card-rating-mid';
   return 'video-card-rating-low';
+}
+
+// 集数角标:已完结(包含 "完结" 或 "全")用灰底
+function getRemarksClass(remarks?: string): string {
+  if (!remarks) return '';
+  if (remarks.includes('完结') || /全\d+/.test(remarks) || /完$/.test(remarks)) {
+    return 'video-card-remarks video-card-remarks-finished';
+  }
+  return 'video-card-remarks';
 }
 
 export function VideoCard({ data, width = 'normal' }: Props) {
@@ -44,6 +54,7 @@ export function VideoCard({ data, width = 'normal' }: Props) {
     : '';
 
   const ratingClass = getRatingClass(data.rate);
+  const remarksClass = getRemarksClass(data.remarks);
 
   return (
     <view
@@ -58,9 +69,9 @@ export function VideoCard({ data, width = 'normal' }: Props) {
             mode="aspectFill"
           />
         ) : null}
-        {/* 集数角标 - 左上角 */}
+        {/* 集数角标 - 左上角(已完结=灰底) */}
         {data.remarks ? (
-          <view className="video-card-remarks">
+          <view className={remarksClass}>
             <text>{data.remarks}</text>
           </view>
         ) : null}
@@ -83,14 +94,17 @@ export function VideoCard({ data, width = 'normal' }: Props) {
       <text className="video-title" text-maxline="1">
         {data.title}
       </text>
-      <text className="video-meta" text-maxline="1">
-        {data.year || data.type_name || ''}
-      </text>
+      {/* 来源标签 - 豆瓣 / 资源站 */}
+      {data.source_name ? (
+        <view className="video-card-source">
+          <text className="video-card-source-text">{data.source_name}</text>
+        </view>
+      ) : null}
     </view>
   );
 }
 
-// 横向滚动列表 - 对齐 LunaTV ScrollableRow
+// 横向滚动列表 - Selene ScrollableRow
 export function HorizontalList({
   title,
   action = '查看全部',
