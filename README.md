@@ -138,3 +138,5 @@ https://moontv.example.com
 - [Lynx](https://github.com/lynx-family/lynx) - 跨端 UI 框架
 - [LunaTV](https://github.com/djsevenx1/LunaTV) - 后端
 - [Selene](https://github.com/djsevenx1/Selene) - UI 范式参考
+
+<!-- rebuild trigger: 2026-06-19T11:41:49.785181Z -->
