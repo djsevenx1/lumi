@@ -33,12 +33,8 @@ public class AssetTemplateProvider extends AbsTemplateProvider {
             is.close();
             callback.onSuccess(bos.toByteArray());
         } catch (Exception e) {
-            // onFailed 签名因 Lynx 版本而异,反射或吞掉异常
-            try {
-                callback.onFailed(e);
-            } catch (Throwable t) {
-                // 兜底
-            }
+            // onFailed 接受 String
+            callback.onFailed(e.toString());
         }
     }
 }
