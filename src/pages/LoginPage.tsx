@@ -1,7 +1,7 @@
 // 登录页 - LunaTV Web 同款
 // 紫蓝渐变背景 + 白色大圆角卡片 + 绿色 LOMI 按钮
 import { useState } from '@lynx-js/react';
-import { useConfig, setAuth } from '../store';
+import { useConfig, setConfig, setAuth } from '../store';
 import { login, register } from '../api/endpoints';
 import { getAuthCookie } from '../api/client';
 import { back, navigate } from '../lib/router';
@@ -12,6 +12,7 @@ type Mode = 'login' | 'register';
 export function LoginPage() {
   const [config] = useConfig();
   const [mode, setMode] = useState<Mode>('login');
+  const [apiBase, setApiBase] = useState(config.apiBase || '');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -20,8 +21,21 @@ export function LoginPage() {
   const [error, setError] = useState('');
 
   async function onSubmit() {
-    if (!config.apiBase) {
-      setError('请先在设置里配置 LunaTV 服务地址');
+    const trimmedBase = apiBase.trim();
+    let effectiveBase = config.apiBase;
+    if (trimmedBase) {
+      let base = trimmedBase;
+      if (!/^https?:\/\//i.test(base)) {
+        base = 'https://' + base;
+      }
+      base = base.replace(/\/+$/, '');
+      effectiveBase = base;
+      if (base !== config.apiBase) {
+        setConfig({ ...config, apiBase: base });
+      }
+    }
+    if (!effectiveBase) {
+      setError('请先填写服务器地址');
       return;
     }
     if (!username.trim() || !password) {
@@ -36,11 +50,11 @@ export function LoginPage() {
     setError('');
     try {
       if (mode === 'login') {
-        const r = await login(config.apiBase, username.trim(), password);
+        const r = await login(effectiveBase, username.trim(), password);
         if (!r.ok) throw new Error(r.error || r.message || '登录失败');
       } else {
         const r = await register(
-          config.apiBase,
+          effectiveBase,
           username.trim(),
           password,
           confirmPassword,
@@ -95,6 +109,17 @@ export function LoginPage() {
             <text className="login-subtitle">
               {mode === 'login' ? '欢迎回来,请登录您的账户' : '创建账号,开启观影之旅'}
             </text>
+          </view>
+
+          {/* 服务器地址输入框 */}
+          <view className="login-input-wrap">
+            <text className="login-input-icon">🌐</text>
+            <input
+              className="login-input"
+              placeholder="服务器地址"
+              placeholder-class="login-input-placeholder"
+              bindinput={(e: any) => setApiBase(e.detail.value)}
+            />
           </view>
 
           {/* segmented 切换登录/注册 */}
@@ -214,20 +239,6 @@ export function LoginPage() {
               }}
             >
               {mode === 'login' ? '立即注册' : '前往登录'}
-            </text>
-          </view>
-
-          {/* 服务地址 */}
-          <view className="form-endpoint-row">
-            <text className="form-endpoint-label">服务地址:</text>
-            <text className="form-endpoint-value">
-              {config.apiBase || '未配置'}
-            </text>
-            <text
-              className="form-endpoint-edit"
-              bindtap={() => navigate({ name: 'settings' })}
-            >
-              · 更改
             </text>
           </view>
         </view>

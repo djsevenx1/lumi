@@ -537,12 +537,8 @@
 .login-brand {
   font-size: 26px;
   font-weight: 800;
-  color: var(--color-primary);
-  margin-top: 12px;
-  background-color: transparent;
-  background-image: linear-gradient(90deg, #16A34A 0%, #059669 50%, #0D9488 100%);
-  /* text gradient 不被 Lynx 普遍支持,改用纯色 */
   color: #16A34A;
+  margin-top: 12px;
 }
 
 .login-subtitle {
