@@ -87,7 +87,7 @@ task copyLynxBundle {
         def src = file("${rootProject.projectDir}/../dist/main.lynx.bundle")
         def dstDir = file("${project.projectDir}/src/main/assets")
         if (!src.exists()) {
-            throw new GradleException("Lynx bundle not found at ${src}. Run \`pnpm run build\` in repo root first.")
+            throw new GradleException("Lynx bundle not found at ${src}. Run 'pnpm run build' in repo root first.")
         }
         dstDir.mkdirs()
         copy {
