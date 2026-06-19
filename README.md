@@ -1,106 +1,142 @@
-# LunaTV Android 壳工程
+# lumi - LunaTV Client for Lynx
 
-把 Rspeedy 产出的 [dist/main.lynx.bundle](../../dist/main.lynx.bundle) 打包成 Android APK。
+基于 [Lynx](https://github.com/lynx-family/lynx) + [ReactLynx](https://lynxjs.org/) 构建的 LunaTV 跨端客户端,一套代码同时支持 iOS / Android / Web。
 
-## 架构
+UI 范式对齐 [Selene](https://github.com/MoonTechLab/Selene),后端对接 [LunaTV](https://github.com/djsevenx1/LunaTV) / MoonTV 的 API。
+
+## ✨ 功能
+
+- 🏠 **首页**:Banner 轮播、继续观看、热门电影/剧集/动漫/综艺
+- 🔍 **多源聚合搜索**:实时搜索建议、搜索历史、类型筛选
+- 📄 **详情页**:海报、简介、演员、评分、集数切换、收藏
+- ⭐ **我的收藏 / 播放记录**:本地缓存 + 服务端同步
+- 🔐 **登录/注册**:JWT 鉴权,支持邀请码注册
+- ⚙️ **设置**:API 地址配置、主题、缓存清理
+- 🎬 **视频播放**:支持多清晰度、自动保存播放进度
+- 📱 **底部 Tab 导航**:首页 / 搜索 / 我的 / 设置
+
+## 🛠 技术栈
+
+| 层级 | 技术 |
+|---|---|
+| UI 框架 | [Lynx](https://github.com/lynx-family/lynx) + ReactLynx |
+| 构建工具 | [Rspeedy](https://lynxjs.org/guide/start/quick-start.html)(Rspack) |
+| 语言 | TypeScript 5.9 |
+| 状态 | 自研轻量 store(无外部依赖) |
+| 持久化 | `NativeModules.Storage` 优先,降级到 `globalThis` 内存 |
+| HTTP | 原生 `fetch` |
+| 视频 | 占位实现(需 native 视频模块) |
+
+## 📂 项目结构
 
 ```
-Lynx bundle (TS/TSX → Rspeedy)  →  dist/main.lynx.bundle
-                                       ↓ (gradle copyLynxBundle)
-                                 android/app/src/main/assets/main.lynx.bundle
-                                       ↓ (LynxView 加载)
-                                  Android APK
+src/
+├── App.tsx              # 应用入口 + 路由分发
+├── App.css              # 全局样式(深色主题)
+├── index.tsx            # 渲染入口
+├── api/
+│   ├── types.ts         # LunaTV API 类型定义
+│   ├── client.ts        # fetch 封装(token / 错误 / 超时)
+│   ├── endpoints.ts     # 所有 API 端点
+│   └── endpoints-helper.ts
+├── lib/
+│   ├── config.ts        # 全局配置 + 存储 key
+│   ├── storage.ts       # 持久化存储(原生优先)
+│   └── router.ts        # 简易状态路由
+├── store/
+│   └── index.ts         # 全局状态(config / auth / favorites / records)
+├── components/
+│   ├── TabBar.tsx       # 底部 Tab
+│   ├── VideoCard.tsx    # 视频卡片 + 横向列表
+│   ├── SearchBar.tsx    # 搜索输入框
+│   └── Common.tsx       # Loading / Empty / Error / PosterPlaceholder
+└── pages/
+    ├── HomePage.tsx     # 首页
+    ├── SearchPage.tsx   # 搜索
+    ├── DetailPage.tsx   # 详情 + 选集
+    ├── PlayerPage.tsx   # 播放
+    ├── MyPage.tsx       # 我的(收藏/历史/账号)
+    ├── LoginPage.tsx    # 登录/注册
+    ├── SettingsPage.tsx # 设置
+    └── CategoryPage.tsx # 分类浏览
 ```
 
-- **LynxView** 是字节跳动 Lynx 引擎提供的原生 View(类似 WebView)
-- **LynxEnv** 在 `LynxApplication.onCreate()` 初始化一次
-- **Lynx Service**(image/log/http)集成 Fresco + OkHttp
+## 🚀 快速开始
 
-## 编译前置
-
-- JDK 17+
-- Android SDK 34(`compileSdk=34`,`minSdk=21`)
-- 已配置 `ANDROID_HOME` 或 `ANDROID_SDK_ROOT`
-- 项目根目录已经跑过 `pnpm install` + `pnpm run build`,生成 [dist/main.lynx.bundle](../../dist/main.lynx.bundle)
-
-## 首次准备
+### 安装依赖
 
 ```bash
-# 在 android/ 目录下生成 gradle wrapper(用本机 Gradle 8.7+ 即可)
-cd android
-gradle wrapper --gradle-version 8.7
+pnpm install
 ```
 
-## 编译 Debug APK
+### 开发(预览)
 
 ```bash
-cd android
-./gradlew assembleDebug
-# 产物: app/build/outputs/apk/debug/app-debug.apk
+pnpm dev
 ```
 
-## 安装到设备
+启动后用 [Lynx Explorer](https://github.com/lynx-family/lynx/tree/main/explorer) App 扫码即可预览。
+
+### 生产构建
 
 ```bash
-./gradlew installDebug
-# 或: adb install app/build/outputs/apk/debug/app-debug.apk
+pnpm build
 ```
 
-## 编译 Release APK(需要签名)
+产物:`dist/main.lynx.bundle`(约 188 KB)
 
-在 `android/gradle.properties` 或 `~/.gradle/gradle.properties` 配:
-
-```properties
-LUNATV_STORE_FILE=/path/to/keystore.jks
-LUNATV_STORE_PASSWORD=xxxxx
-LUNATV_KEY_ALIAS=lunatv
-LUNATV_KEY_PASSWORD=xxxxx
-```
-
-在 [app/build.gradle](app/build.gradle) 取消 `signingConfig` 注释。
-
-然后:
+### 类型检查
 
 ```bash
-./gradlew assembleRelease
-# 产物: app/build/outputs/apk/release/app-release.apk
+pnpm typecheck
 ```
 
-## 重新同步 Lynx Bundle
+## 📱 接入原生 App
 
-每次改了 TS/TSX 代码后:
+Lynx 本身是跨端 UI 框架,`main.lynx.bundle` 是一段可以被原生壳加载的 Lynx 资源。要打包成 iOS / Android App,需要:
 
-```bash
-# 项目根
-pnpm run build
-# 回到 android/,assembleDebug 之前会自动触发 copyLynxBundle
-cd android && ./gradlew assembleDebug
+1. **iOS**:用 CocoaPods 集成 `Lynx` 框架,加载 `main.lynx.bundle`
+2. **Android**:Gradle 依赖 `com.lynx.tasm:lynx`,加载 `main.lynx.bundle`
+3. **视频播放**:Lynx 内核没有内置 `<video>` 标签,需要接入视频 native module:
+   - 推荐:[@sigx/lynx-video](https://www.npmjs.com/package/@sigx/lynx-video)(iOS AVPlayer + Android Media3)
+   - 自定义:实现 `NativeModules.VideoPlayer` 并注册 `<video-player>` 元素
+
+修改 `src/pages/PlayerPage.tsx` 中的 `renderVideo()` 函数,把占位换成真实的 video 元素即可。
+
+## ⚙️ API 对接
+
+首次启动时,在「设置」页填入你的 LunaTV / MoonTV 后端地址(包含协议,不含尾部斜杠),例如:
+
+```
+https://moontv.example.com
 ```
 
-也可以手动复制:
+对接的 API 端点(在 `src/api/endpoints.ts`):
 
-```bash
-./gradlew copyLynxBundle
-```
+| 端点 | 用途 |
+|---|---|
+| `POST /api/login` | 登录 |
+| `POST /api/register` | 注册 |
+| `GET /api/me` | 当前用户 |
+| `GET /api/search?q=...&type=...` | 搜索 |
+| `GET /api/detail?source=...&id=...` | 详情 |
+| `GET /api/parse?source=...&id=...&episode=...` | 解析播放地址 |
+| `GET /api/favorites` | 获取收藏 |
+| `POST /api/favorites` | 添加收藏 |
+| `DELETE /api/favorites?key=...` | 删除收藏 |
+| `GET /api/playrecords` | 播放记录 |
+| `POST /api/playrecords` | 保存播放记录 |
+| `GET /api/douban?kind=...` | 豆瓣热门 |
+| `GET /api/image-proxy?url=...&referer=...` | 图片代理(防 403) |
 
-## CI 编译(可选)
+## 📜 License
 
-仓库已经配了 [ci.yml](../.github/workflows/ci.yml) 编译 Lynx bundle。
-要加上 Android 编译,在 [build.yml](../.github/workflows/build.yml) 加一个新 job,装 Android SDK 后跑 `./gradlew assembleDebug`。
-详细脚本见 [Lynx CI 模板](https://github.com/lynx-family/lynx/tree/main/platform/android)。
+本项目仅供学习交流使用。所有视频内容均来自第三方平台,与开发者无关。
 
-## 常见问题
+## 🙏 致谢
 
-### `package org.lynxsdk.lynx does not exist`
+- [Lynx](https://github.com/lynx-family/lynx) - 跨端 UI 框架
+- [LunaTV](https://github.com/djsevenx1/LunaTV) - 后端
+- [Selene](https://github.com/djsevenx1/Selene) - UI 范式参考
 
-确认 `~/.gradle/init.d/` 或 `settings.gradle` 的 repositories 包含 `mavenCentral()`,Lynx 3.5.x 已经发布到 Maven Central。
-
-### 启动白屏
-
-检查 `assets/main.lynx.bundle` 是否存在:
-
-```bash
-ls -lh android/app/src/main/assets/main.lynx.bundle
-```
-
-如果文件不存在,说明 `pnpm run build` 没跑过,或 `copyLynxBundle` 任务没执行。手动跑 `./gradlew copyLynxBundle`。
+<!-- rebuild trigger: 2026-06-19T11:41:49.785181Z -->
