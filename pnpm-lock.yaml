@@ -11,6 +11,9 @@ importers:
       '@lynx-js/react':
         specifier: ^0.121.2
         version: 0.121.2(@lynx-js/types@3.7.0)(@types/react@18.3.31)
+      '@sigx/lynx-video':
+        specifier: ^0.9.1
+        version: 0.9.1(@sigx/lynx@0.9.1(@lynx-js/types@3.7.0))
     devDependencies:
       '@lynx-js/preact-devtools':
         specifier: 5.0.1-20260525112551-dfe2d03
@@ -552,6 +555,39 @@ packages:
 
   '@rspack/resolver@0.2.8':
     resolution: {integrity: sha512-FBWqdHhzS8mcf/WN4Ktzr7EaeaN+hsxbN98EweegX3924beZuY6H70CSFWCv1fIHAieCUv/9XCjKggHvhCsLwA==}
+
+  '@sigx/lynx-core@0.9.1':
+    resolution: {integrity: sha512-DExOEWftQxZt8+AZLCG4EDUW50qEllpd+BGB9YPLdD5H6jIh0CuzTH89d5Q4HzhdRzvJhpvsApJuTKfs0zLakg==}
+
+  '@sigx/lynx-http@0.9.1':
+    resolution: {integrity: sha512-sYP51n2ibxqjCDYzpG1i7SXyGqao1GgsTtq/ESGgz4StuIgNhDbikHG23fcXgjYftjkqzTqZLZVfteOEtsSIHQ==}
+
+  '@sigx/lynx-runtime-internal@0.9.1':
+    resolution: {integrity: sha512-zpe9Yvk4314PswK3e5StkahQosevurpcbwxhJOAqJ4LHUTiIQS5NjUrigN5qrcI45R14lvbZzRELmVtm3ORf7w==}
+
+  '@sigx/lynx-runtime@0.9.1':
+    resolution: {integrity: sha512-xIHvbVfBq0LNxi3EUa/HneUdb0w/tCMuBUrEgMF5uxMiCLU00DjjBGQ1wCDaG7UA7P1cB65B2QdTUmII6v/pWQ==}
+    peerDependencies:
+      '@lynx-js/types': '*'
+    peerDependenciesMeta:
+      '@lynx-js/types':
+        optional: true
+
+  '@sigx/lynx-video@0.9.1':
+    resolution: {integrity: sha512-mMgGQK+S5c4d7NRdGY7WLg4NlSyeH9uyEONS9RBga0ABfXbSEvvPUFqW5EkWok/xCiwFoUfonpNIOHm/TjdN/Q==}
+    peerDependencies:
+      '@sigx/lynx': ^0.9.1
+
+  '@sigx/lynx@0.9.1':
+    resolution: {integrity: sha512-tvUs6tYeq8dfh3aolSVOFy8/wQaPdkBn+gm/26H5ZHdbe9c7qFo7hC5RGVRjGhn0f2wSszwzXxU4a+NLpjie1g==}
+
+  '@sigx/reactivity@0.7.0':
+    resolution: {integrity: sha512-EnsRi5j49qf8Bp8AB1PUenqwQcU0ekopxAkKLSgJIFnJwWhMczj/WX5m9dxKeXbMtGYoM54poqaXtvey0efGag==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+
+  '@sigx/runtime-core@0.7.0':
+    resolution: {integrity: sha512-33OzDnmA1xe1xUGIZ4JAYQuPnlvq92CTzNbYu5fBi5pLLtWuAYi+CNeMXr80J6XU98BrMaaAJg3wU3nUWUQbKg==}
+    engines: {node: ^20.19.0 || >=22.12.0}
 
   '@sinclair/typebox@0.34.49':
     resolution: {integrity: sha512-brySQQs7Jtn0joV8Xh9ZV/hZb9Ozb0pmazDIASBkYKCjXrXU3mpcFahmK/z4YDhGkQvP9mWJbVyahdtU5wQA+A==}
@@ -2602,6 +2638,42 @@ snapshots:
     transitivePeerDependencies:
       - '@emnapi/core'
       - '@emnapi/runtime'
+
+  '@sigx/lynx-core@0.9.1': {}
+
+  '@sigx/lynx-http@0.9.1':
+    dependencies:
+      '@sigx/lynx-core': 0.9.1
+
+  '@sigx/lynx-runtime-internal@0.9.1': {}
+
+  '@sigx/lynx-runtime@0.9.1(@lynx-js/types@3.7.0)':
+    dependencies:
+      '@sigx/lynx-runtime-internal': 0.9.1
+      '@sigx/reactivity': 0.7.0
+      '@sigx/runtime-core': 0.7.0
+    optionalDependencies:
+      '@lynx-js/types': 3.7.0
+
+  '@sigx/lynx-video@0.9.1(@sigx/lynx@0.9.1(@lynx-js/types@3.7.0))':
+    dependencies:
+      '@sigx/lynx': 0.9.1(@lynx-js/types@3.7.0)
+
+  '@sigx/lynx@0.9.1(@lynx-js/types@3.7.0)':
+    dependencies:
+      '@sigx/lynx-core': 0.9.1
+      '@sigx/lynx-http': 0.9.1
+      '@sigx/lynx-runtime': 0.9.1(@lynx-js/types@3.7.0)
+      '@sigx/reactivity': 0.7.0
+      '@sigx/runtime-core': 0.7.0
+    transitivePeerDependencies:
+      - '@lynx-js/types'
+
+  '@sigx/reactivity@0.7.0': {}
+
+  '@sigx/runtime-core@0.7.0':
+    dependencies:
+      '@sigx/reactivity': 0.7.0
 
   '@sinclair/typebox@0.34.49': {}
 

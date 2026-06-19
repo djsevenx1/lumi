@@ -8,7 +8,8 @@
     "preview": "rspeedy preview"
   },
   "dependencies": {
-    "@lynx-js/react": "^0.121.2"
+    "@lynx-js/react": "^0.121.2",
+    "@sigx/lynx-video": "^0.9.1"
   },
   "devDependencies": {
     "@lynx-js/preact-devtools": "5.0.1-20260525112551-dfe2d03",

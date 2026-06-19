@@ -4,52 +4,8 @@ import { useConfig, setRecordsLocal, getRecordsLocal, usePlayRecords, getAuth } 
 import { detail, savePlayRecord } from '../api/endpoints';
 import { back } from '../lib/router';
 import { LoadingView, ErrorView } from '../components/Common';
+import { VideoPlayer } from '../components/VideoPlayer';
 import type { PlayRecord } from '../api/types';
-
-/**
- * 渲染视频元素。
- * Lynx 没有内置 <video>,这里把 video 渲染抽象出来,方便替换实现。
- * 默认是空的占位,实际项目里应该:
- *   1) 集成 @sigx/lynx-video (推荐,iOS AVPlayer + Android Media3)
- *   2) 或实现自定义 NativeModules.VideoPlayer
- *   3) 或退回到 webview 内嵌 HLS.js
- */
-function renderVideo(
-  src: string,
-  poster?: string,
-  events: Record<string, any> = {},
-): any {
-  return (
-    <view
-      style={{
-        width: '100%',
-        height: '100%',
-        backgroundColor: '#000',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <view
-        style={{
-          padding: 16,
-          backgroundColor: 'rgba(255,255,255,0.05)',
-          borderRadius: 8,
-          alignItems: 'center',
-        }}
-      >
-        <text style={{ color: '#A0A0B8', fontSize: 14, marginBottom: 8 }}>
-          🎬 视频播放
-        </text>
-        <text
-          style={{ color: '#6E6E80', fontSize: 11, textAlign: 'center' }}
-        >
-          (需要在原生端实现 VideoPlayer){'\n'}
-          {src.substring(0, 60)}...
-        </text>
-      </view>
-    </view>
-  );
-}
 
 interface Props {
   source: string;
@@ -213,18 +169,18 @@ export function PlayerPage({ source, id, episode, title, poster }: Props) {
 
   return (
     <view className="player-page">
-      {renderVideo(videoUrl, poster, {
-        bindtap: toggleControls,
-        bindplay: () => setPaused(false),
-        bindpause: () => {
-          setPaused(true);
-          saveProgress(current, duration);
-        },
-        bindended: onEnded,
-        bindtimeupdate: (e: any) => setCurrent(e?.detail?.currentTime || 0),
-        bindloadedmetadata: (e: any) => setDuration(e?.detail?.duration || 0),
-        binderror: () => setError('视频加载失败'),
-      })}
+      <VideoPlayer
+        src={videoUrl}
+        poster={poster}
+        controls={true}
+        resizeMode="contain"
+        playing={!paused}
+        onLoad={(e: any) => setDuration((e?.detail?.durationMs || 0) / 1000)}
+        onEnd={onEnded}
+        onTimeUpdate={(e: any) => setCurrent((e?.detail?.positionMs || 0) / 1000)}
+        onError={(e: any) => setError(e?.detail?.message || '视频加载失败')}
+        style={{ width: '100%', height: '100%' }}
+      />
 
       {showControls ? (
         <>
