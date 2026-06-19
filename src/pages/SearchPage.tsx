@@ -1,9 +1,10 @@
-// 搜索页 - 实时搜索 + 搜索历史
+// 搜索页 - 对齐 LunaTV search/page.tsx
+// 列表式搜索结果卡片 + 搜索历史
 import { useEffect, useState, useCallback, useRef } from '@lynx-js/react';
 import { useConfig, useSearchHistory, pushSearchHistory, clearSearchHistory, getAuth } from '../store';
 import { search } from '../api/endpoints';
-import { VideoCard } from '../components/VideoCard';
-import { LoadingView, EmptyView, ErrorView } from '../components/Common';
+import { imageProxyUrl } from '../api/endpoints-helper';
+import { EmptyView, ErrorView, LoadingView } from '../components/Common';
 import { SearchBar } from '../components/SearchBar';
 import { navigate } from '../lib/router';
 import type { SearchResult } from '../api/types';
@@ -34,7 +35,6 @@ export function SearchPage() {
 
   async function doSearch(q: string) {
     if (!q.trim() || !config.apiBase) return;
-    // 搜索需要登录(cookie 鉴权)
     const auth = getAuth();
     if (!auth.cookie) {
       setError('请先登录后再搜索');
@@ -113,7 +113,7 @@ export function SearchPage() {
                   搜索历史
                 </text>
                 <text
-                  style={{ color: '#A0A0B8', fontSize: 12 }}
+                  style={{ color: '#6b7280', fontSize: 12 }}
                   bindtap={onClearHistory}
                 >
                   🗑 清空
@@ -133,11 +133,11 @@ export function SearchPage() {
                       flex: 1,
                     }}
                   >
-                    <text style={{ color: '#6E6E80', fontSize: 14 }}>🕐</text>
+                    <text style={{ color: '#6b7280', fontSize: 14 }}>🕐</text>
                     <text style={{ color: '#FFFFFF', fontSize: 14 }}>{q}</text>
                   </view>
                   <text
-                    style={{ color: '#6E6E80', fontSize: 18, padding: 4 }}
+                    style={{ color: '#6b7280', fontSize: 18, padding: 4 }}
                   >
                     ›
                   </text>
@@ -154,38 +154,89 @@ export function SearchPage() {
           text={searched ? `没有找到关于"${keyword}"的结果` : '输入关键词开始搜索'}
         />
       ) : (
+        // LunaTV 列表式搜索结果
         <view>
           <view style={{ paddingLeft: 16, paddingRight: 16, marginBottom: 8 }}>
-            <text style={{ color: '#A0A0B8', fontSize: 13 }}>
+            <text style={{ color: '#6b7280', fontSize: 12 }}>
               共找到 {results.length} 个结果
             </text>
           </view>
-          <scroll-view
-            scroll-x
-            className="horizontal-scroll-wide"
-            show-scrollbar={false}
-            style={{ paddingLeft: 16 }}
-          >
-            {results.map((r, i) => (
-              <VideoCard key={`${r.source}-${r.id}-${i}`} data={r} />
-            ))}
-          </scroll-view>
-          {/* 网格 */}
-          <view
-            style={{
-              flexDirection: 'row',
-              flexWrap: 'wrap',
-              padding: 16,
-              paddingTop: 0,
-              gap: 12,
-            }}
-          >
-            {results.map((r, i) => (
-              <view key={`g-${r.source}-${r.id}-${i}`}>
-                <VideoCard data={r} />
+          {results.map((r, i) => (
+            <view
+              key={`${r.source}-${r.id}-${i}`}
+              className="search-result-card"
+              bindtap={() =>
+                navigate({ name: 'detail', source: r.source, id: r.id })
+              }
+            >
+              {/* 海报 */}
+              <view className="search-result-poster">
+                {r.poster ? (
+                  <image
+                    src={imageProxyUrl(config.apiBase, r.poster)}
+                    style={{ width: '100%', height: '100%' }}
+                    mode="aspectFill"
+                  />
+                ) : null}
               </view>
-            ))}
-          </view>
+              {/* 信息 */}
+              <view className="search-result-info">
+                <text className="search-result-title" text-maxline="2">
+                  {r.title}
+                </text>
+                <view className="search-result-meta">
+                  {r.type_name ? (
+                    <view className="search-result-tag">
+                      <text>{r.type_name}</text>
+                    </view>
+                  ) : null}
+                  {r.year ? (
+                    <view className="search-source-tag">
+                      <text>{r.year}</text>
+                    </view>
+                  ) : null}
+                  {r.remarks ? (
+                    <view className="search-source-tag">
+                      <text>{r.remarks}</text>
+                    </view>
+                  ) : null}
+                </view>
+                {r.desc ? (
+                  <text className="search-result-desc" text-maxline="2">
+                    {r.desc}
+                  </text>
+                ) : null}
+                {/* 播放源标签 - LunaTV 风格 */}
+                {r.source_name ? (
+                  <view
+                    style={{
+                      flexDirection: 'row',
+                      marginTop: 4,
+                    }}
+                  >
+                    <view className="search-source-tag">
+                      <text>{r.source_name}</text>
+                    </view>
+                  </view>
+                ) : null}
+              </view>
+              {/* 播放按钮 */}
+              <view
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 18,
+                  backgroundColor: '#10b981',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  alignSelf: 'center',
+                }}
+              >
+                <text style={{ color: '#fff', fontSize: 16 }}>▶</text>
+              </view>
+            </view>
+          ))}
+          <view style={{ height: 32 }} />
         </view>
       )}
     </scroll-view>

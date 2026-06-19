@@ -1,30 +1,54 @@
 /* 全局样式 — LunaTV Client
-   配色对齐 Selene/Netflix 风格:深色为主,红色高亮 */
+   对齐 LunaTV Web 端 Netflix/Disney+ 风格:
+   - 纯黑背景 + 绿色系主操作色(emerald/teal)
+   - 玻璃态导航栏(backdrop-blur)
+   - 卡片悬停放大 + 光泽动画
+   - HeroBanner 大图轮播
+   - 横向滚动行 + 区块标题
+*/
 
 :root {
-  /* 主题色 */
-  --color-bg: #0F0F1A;
-  --color-bg-elev: #1A1A2E;
-  --color-bg-elev2: #252540;
-  --color-surface: rgba(255, 255, 255, 0.04);
-  --color-surface-hover: rgba(255, 255, 255, 0.08);
+  /* 背景 - LunaTV 用纯黑 */
+  --color-bg: #000000;
+  --color-bg-elev: #0a0a0a;
+  --color-bg-elev2: #141414;
+  --color-bg-elev3: #1a1a1a;
+  --color-surface: rgba(255, 255, 255, 0.06);
+  --color-surface-hover: rgba(255, 255, 255, 0.1);
   --color-border: rgba(255, 255, 255, 0.08);
-  --color-text: #FFFFFF;
-  --color-text-sub: #A0A0B8;
-  --color-text-mute: #6E6E80;
-  --color-primary: #E50914;
-  --color-primary-soft: rgba(229, 9, 20, 0.18);
-  --color-accent: #6366F1;
-  --color-success: #10B981;
-  --color-warning: #F59E0B;
-  --color-error: #EF4444;
+  --color-border-strong: rgba(255, 255, 255, 0.15);
 
+  /* 文字 */
+  --color-text: #FFFFFF;
+  --color-text-sub: #d1d5db; /* gray-300 */
+  --color-text-mute: #6b7280; /* gray-500 */
+  --color-text-faint: #4b5563; /* gray-600 */
+
+  /* 主色 - LunaTV 用绿色系(emerald/teal) */
+  --color-primary: #10b981; /* emerald-500 */
+  --color-primary-dark: #059669; /* emerald-600 */
+  --color-primary-light: #34d399; /* emerald-400 */
+  --color-primary-soft: rgba(16, 185, 129, 0.15);
+  --color-primary-glow: rgba(16, 185, 129, 0.4);
+
+  /* 功能色 - 对齐 LunaTV */
+  --color-accent: #3b82f6; /* blue-500 评分徽章 */
+  --color-success: #10b981;
+  --color-warning: #f59e0b; /* orange-500 即将上映 */
+  --color-error: #ef4444; /* red-500 删除 */
+  --color-gold: #fbbf24; /* yellow-400 高分 */
+  --color-purple: #a855f7; /* 动漫 */
+  --color-pink: #ec4899; /* 综艺 */
+
+  /* 圆角 */
   --radius-sm: 6px;
   --radius-md: 10px;
-  --radius-lg: 16px;
+  --radius-lg: 14px;
   --radius-xl: 20px;
+  --radius-2xl: 24px;
   --radius-pill: 999px;
 
+  /* 间距 */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -33,16 +57,19 @@
   --space-6: 24px;
   --space-8: 32px;
   --space-10: 40px;
+  --space-12: 48px;
 
-  --header-h: 56px;
-  --tabbar-h: 64px;
+  /* 尺寸 */
+  --header-h: 44px;
+  --tabbar-h: 60px;
 
-  --font-xs: 11px;
-  --font-sm: 13px;
-  --font-md: 15px;
-  --font-lg: 17px;
-  --font-xl: 20px;
-  --font-2xl: 24px;
+  /* 字体 */
+  --font-xs: 10px;
+  --font-sm: 12px;
+  --font-md: 14px;
+  --font-lg: 16px;
+  --font-xl: 18px;
+  --font-2xl: 22px;
   --font-3xl: 28px;
 }
 
@@ -75,55 +102,19 @@ body, page {
   padding-bottom: 0;
 }
 
-.text-mute { color: var(--color-text-sub); }
-.text-mute2 { color: var(--color-text-mute); }
-.text-primary { color: var(--color-primary); }
-.text-accent { color: var(--color-accent); }
-.text-success { color: var(--color-success); }
-.text-warn { color: var(--color-warning); }
-.text-error { color: var(--color-error); }
-
-.t-xs { font-size: var(--font-xs); }
-.t-sm { font-size: var(--font-sm); }
-.t-md { font-size: var(--font-md); }
-.t-lg { font-size: var(--font-lg); }
-.t-xl { font-size: var(--font-xl); }
-.t-2xl { font-size: var(--font-2xl); }
-.t-3xl { font-size: var(--font-3xl); }
-
-.fw-500 { font-weight: 500; }
-.fw-600 { font-weight: 600; }
-.fw-700 { font-weight: 700; }
-.fw-800 { font-weight: 800; }
-
-.row { flex-direction: row; align-items: center; }
-.col { flex-direction: column; }
-.center { justify-content: center; align-items: center; }
-.between { justify-content: space-between; }
-.around { justify-content: space-around; }
-.gap-1 { gap: 4px; }
-.gap-2 { gap: 8px; }
-.gap-3 { gap: 12px; }
-.gap-4 { gap: 16px; }
-
-.flex-1 { flex: 1; }
-.flex-grow { flex-grow: 1; }
-
-/* ====== 顶栏 ====== */
+/* ====== 顶栏 - 玻璃态 ====== */
 .app-header {
   height: var(--header-h);
   padding: 0 var(--space-4);
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  background-color: var(--color-bg);
-  border-bottom-width: 1px;
-  border-bottom-style: solid;
-  border-bottom-color: var(--color-border);
+  background-color: rgba(10, 10, 10, 0.85);
+  border-bottom-width: 0;
 }
 
 .app-title {
-  font-size: var(--font-xl);
+  font-size: var(--font-lg);
   font-weight: 700;
   color: var(--color-text);
 }
@@ -134,15 +125,15 @@ body, page {
 }
 
 .icon-btn {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: var(--radius-pill);
   align-items: center;
   justify-content: center;
   background-color: var(--color-surface);
 }
 
-/* ====== 底部 Tab Bar ====== */
+/* ====== 底部 Tab Bar - Netflix 全宽贴底 ====== */
 .tab-bar {
   position: fixed;
   left: 0;
@@ -151,7 +142,7 @@ body, page {
   height: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px));
   padding-bottom: env(safe-area-inset-bottom, 0px);
   flex-direction: row;
-  background-color: var(--color-bg-elev);
+  background-color: rgba(0, 0, 0, 0.95);
   border-top-width: 1px;
   border-top-style: solid;
   border-top-color: var(--color-border);
@@ -161,18 +152,18 @@ body, page {
   flex: 1;
   align-items: center;
   justify-content: center;
-  padding-top: 6px;
+  padding-top: 8px;
   padding-bottom: 4px;
   gap: 2px;
 }
 
 .tab-icon {
-  font-size: 22px;
+  font-size: 20px;
 }
 
 .tab-label {
-  font-size: var(--font-xs);
-  color: var(--color-text-sub);
+  font-size: 10px;
+  color: var(--color-text-mute);
 }
 
 .tab-label-active {
@@ -180,39 +171,41 @@ body, page {
   font-weight: 600;
 }
 
-/* ====== 卡片(影视) ====== */
+/* ====== 卡片(影视) - LunaTV VideoCard 风格 ====== */
 .video-card {
-  width: 120px;
+  width: 108px;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   background-color: transparent;
 }
 
 .video-card-wide {
-  width: 160px;
+  width: 140px;
 }
 
 .video-poster {
-  width: 120px;
-  height: 170px;
+  width: 108px;
+  height: 162px;
   border-radius: var(--radius-md);
-  background-color: var(--color-bg-elev);
+  background-color: var(--color-bg-elev2);
   overflow: hidden;
+  position: relative;
 }
 
 .video-card-wide .video-poster {
-  width: 160px;
-  height: 220px;
+  width: 140px;
+  height: 210px;
   border-radius: var(--radius-lg);
 }
 
 .video-title {
   font-size: var(--font-sm);
   color: var(--color-text);
-  font-weight: 500;
+  font-weight: 600;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
+  padding-top: 2px;
 }
 
 .video-meta {
@@ -220,32 +213,71 @@ body, page {
   color: var(--color-text-mute);
 }
 
-.video-card-watermark {
+/* 评分徽章 - LunaTV 动态颜色 */
+.video-card-rating {
   position: absolute;
-  top: 6px;
-  right: 6px;
-  padding: 2px 6px;
-  border-radius: var(--radius-sm);
-  background-color: rgba(0, 0, 0, 0.65);
+  top: 4px;
+  right: 4px;
+  min-width: 28px;
+  height: 28px;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-gold);
   font-size: var(--font-xs);
+  color: #000;
+  font-weight: 700;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+}
+
+.video-card-rating-high {
+  background-color: var(--color-gold);
+  color: #000;
+}
+
+.video-card-rating-mid {
+  background-color: var(--color-accent);
   color: #fff;
 }
 
-.video-card-rating {
+.video-card-rating-low {
+  background-color: var(--color-text-mute);
+  color: #fff;
+}
+
+/* 集数角标 */
+.video-card-remarks {
   position: absolute;
-  bottom: 6px;
-  left: 6px;
+  top: 4px;
+  left: 4px;
   padding: 2px 6px;
   border-radius: var(--radius-sm);
-  background-color: var(--color-primary);
-  font-size: var(--font-xs);
+  background-color: rgba(0, 0, 0, 0.75);
+  font-size: 9px;
   color: #fff;
-  font-weight: 700;
+  font-weight: 600;
+}
+
+/* 进度条 */
+.video-card-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background-color: rgba(255,255,255,0.15);
+  overflow: hidden;
+}
+
+.video-card-progress-bar {
+  height: 100%;
+  background-color: var(--color-primary);
 }
 
 /* ====== Section ====== */
 .section {
-  padding: var(--space-4);
+  padding: 0 var(--space-4);
+  margin-bottom: var(--space-6);
 }
 
 .section-header {
@@ -253,6 +285,7 @@ body, page {
   align-items: center;
   justify-content: space-between;
   margin-bottom: var(--space-3);
+  padding-top: var(--space-4);
 }
 
 .section-title {
@@ -263,9 +296,11 @@ body, page {
 
 .section-action {
   font-size: var(--font-sm);
-  color: var(--color-text-sub);
+  color: var(--color-primary);
+  font-weight: 500;
 }
 
+/* 横向滚动 */
 .horizontal-scroll {
   flex-direction: row;
   gap: var(--space-3);
@@ -277,12 +312,11 @@ body, page {
   padding-right: var(--space-4);
 }
 
-/* ====== Banner ====== */
+/* ====== Banner - LunaTV HeroBanner 风格 ====== */
 .banner {
-  margin: var(--space-4);
-  height: 180px;
-  border-radius: var(--radius-lg);
-  background-color: var(--color-bg-elev);
+  width: 100%;
+  height: 220px;
+  background-color: var(--color-bg-elev2);
   overflow: hidden;
   position: relative;
 }
@@ -292,20 +326,21 @@ body, page {
   left: 0;
   right: 0;
   bottom: 0;
-  padding: var(--space-4);
-  background-color: linear-gradient(180deg, transparent, rgba(0,0,0,0.85));
+  padding: var(--space-6);
+  background-color: rgba(0,0,0,0);
+  background-image: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 50%, transparent 100%);
 }
 
 .banner-title {
-  font-size: var(--font-xl);
-  font-weight: 700;
+  font-size: var(--font-2xl);
+  font-weight: 800;
   color: #fff;
 }
 
 .banner-sub {
   font-size: var(--font-sm);
   color: rgba(255,255,255,0.8);
-  margin-top: 2px;
+  margin-top: 4px;
 }
 
 .banner-dots {
@@ -327,19 +362,22 @@ body, page {
 
 .banner-dot-active {
   background-color: #fff;
-  width: 18px;
+  width: 20px;
 }
 
-/* ====== 搜索 ====== */
+/* ====== 搜索 - LunaTV 搜索框风格 ====== */
 .search-bar {
   margin: var(--space-4);
-  height: 44px;
-  border-radius: var(--radius-pill);
-  background-color: var(--color-bg-elev);
+  height: 48px;
+  border-radius: var(--radius-lg);
+  background-color: var(--color-bg-elev2);
   padding: 0 var(--space-4);
   flex-direction: row;
   align-items: center;
   gap: var(--space-2);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--color-border);
 }
 
 .search-input {
@@ -354,28 +392,72 @@ body, page {
   color: var(--color-text-mute);
 }
 
-.chip-row {
+/* 搜索结果 - LunaTV 列表式卡片 */
+.search-result-card {
   flex-direction: row;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 0 var(--space-4);
-  margin-bottom: var(--space-3);
-}
-
-.chip {
-  padding: 6px 12px;
-  border-radius: var(--radius-pill);
+  padding: var(--space-3);
+  gap: var(--space-3);
   background-color: var(--color-bg-elev);
-  font-size: var(--font-sm);
-  color: var(--color-text-sub);
+  border-radius: var(--radius-lg);
+  margin: 0 var(--space-4) var(--space-2);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--color-border);
 }
 
-.chip-active {
-  background-color: var(--color-primary);
-  color: #fff;
+.search-result-poster {
+  width: 80px;
+  height: 120px;
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg-elev2);
+  overflow: hidden;
+}
+
+.search-result-info {
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.search-result-title {
+  font-size: var(--font-md);
+  color: var(--color-text);
   font-weight: 600;
 }
 
+.search-result-meta {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.search-result-tag {
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-primary-soft);
+  font-size: 10px;
+  color: var(--color-primary-light);
+  font-weight: 500;
+}
+
+.search-result-desc {
+  font-size: var(--font-xs);
+  color: var(--color-text-sub);
+}
+
+/* 搜索源标签 */
+.search-source-tag {
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--color-border);
+  background-color: var(--color-bg-elev2);
+  font-size: 10px;
+  color: var(--color-text-sub);
+}
+
+/* 搜索历史 */
 .search-history {
   padding: 0 var(--space-4);
 }
@@ -390,11 +472,11 @@ body, page {
   justify-content: space-between;
 }
 
-/* ====== 详情 ====== */
+/* ====== 详情页 - LunaTV douban 风格 ====== */
 .detail-hero {
   width: 100%;
-  height: 280px;
-  background-color: var(--color-bg-elev);
+  height: 260px;
+  background-color: var(--color-bg-elev2);
   position: relative;
   overflow: hidden;
 }
@@ -405,17 +487,18 @@ body, page {
   right: 0;
   top: 0;
   bottom: 0;
-  background-color: linear-gradient(180deg, rgba(0,0,0,0.5), var(--color-bg) 90%);
+  background-image: linear-gradient(180deg, rgba(0,0,0,0.3) 0%, transparent 30%, transparent 50%, rgba(0,0,0,0.8) 100%);
 }
 
 .detail-back-btn {
   position: absolute;
   top: env(safe-area-inset-top, 0px);
   left: 12px;
-  width: 40px;
-  height: 40px;
-  border-radius: 20px;
-  background-color: rgba(0,0,0,0.4);
+  margin-top: 8px;
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  background-color: rgba(0,0,0,0.5);
   align-items: center;
   justify-content: center;
 }
@@ -423,26 +506,26 @@ body, page {
 .detail-info {
   flex-direction: row;
   padding: 0 var(--space-4);
-  margin-top: -60px;
+  margin-top: -80px;
   gap: var(--space-4);
 }
 
 .detail-poster {
-  width: 110px;
-  height: 160px;
+  width: 100px;
+  height: 150px;
   border-radius: var(--radius-md);
-  background-color: var(--color-bg-elev);
+  background-color: var(--color-bg-elev2);
   overflow: hidden;
   border-width: 2px;
   border-style: solid;
-  border-color: var(--color-bg-elev2);
+  border-color: var(--color-bg-elev3);
 }
 
 .detail-meta {
   flex: 1;
   flex-direction: column;
   justify-content: flex-end;
-  gap: 6px;
+  gap: 4px;
   padding-bottom: 4px;
 }
 
@@ -463,45 +546,47 @@ body, page {
   gap: var(--space-3);
 }
 
+/* 播放按钮 - LunaTV 白色按钮 */
 .detail-btn-primary {
   flex: 1;
   height: 44px;
   border-radius: var(--radius-pill);
-  background-color: var(--color-primary);
-  color: #fff;
+  background-color: #fff;
+  color: #000;
   font-size: var(--font-md);
-  font-weight: 600;
+  font-weight: 700;
   align-items: center;
   justify-content: center;
 }
 
+/* 收藏按钮 - 玻璃态 */
 .detail-btn-secondary {
-  flex: 1;
+  width: 44px;
   height: 44px;
   border-radius: var(--radius-pill);
-  background-color: var(--color-bg-elev);
-  color: var(--color-text);
-  font-size: var(--font-md);
-  font-weight: 500;
+  background-color: rgba(255,255,255,0.1);
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgba(255,255,255,0.2);
   align-items: center;
   justify-content: center;
 }
 
 .detail-btn-active {
   background-color: var(--color-primary-soft);
-  color: var(--color-primary);
+  border-color: var(--color-primary);
 }
 
 .detail-overview {
   padding: 0 var(--space-4);
-  margin-top: var(--space-2);
+  margin-top: var(--space-4);
 }
 
 .detail-overview-title {
   font-size: var(--font-md);
   font-weight: 600;
   color: var(--color-text);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .detail-overview-text {
@@ -510,6 +595,7 @@ body, page {
   line-height: 20px;
 }
 
+/* 集数网格 */
 .episode-list {
   flex-direction: row;
   flex-wrap: wrap;
@@ -519,17 +605,21 @@ body, page {
 }
 
 .episode-chip {
-  min-width: 48px;
+  min-width: 44px;
   height: 36px;
-  padding: 0 12px;
-  border-radius: 8px;
-  background-color: var(--color-bg-elev);
+  padding: 0 10px;
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg-elev2);
   align-items: center;
   justify-content: center;
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--color-border);
 }
 
 .episode-chip-active {
   background-color: var(--color-primary);
+  border-color: var(--color-primary);
 }
 
 /* ====== 播放器 ====== */
@@ -542,10 +632,9 @@ body, page {
   background-color: #000;
 }
 
-.player-video {
-  width: 100%;
-  height: 100%;
-  background-color: #000;
+.player-page.center {
+  align-items: center;
+  justify-content: center;
 }
 
 .player-controls {
@@ -554,7 +643,7 @@ body, page {
   right: 0;
   bottom: 0;
   padding: 16px;
-  background-color: linear-gradient(180deg, transparent, rgba(0,0,0,0.7));
+  background-image: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 100%);
 }
 
 .player-top {
@@ -567,7 +656,7 @@ body, page {
   flex-direction: row;
   align-items: center;
   gap: 12px;
-  background-color: linear-gradient(0deg, transparent, rgba(0,0,0,0.5));
+  background-image: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, transparent 100%);
 }
 
 .player-title {
@@ -583,14 +672,14 @@ body, page {
   align-items: center;
   justify-content: center;
   border-radius: 18px;
-  background-color: rgba(255,255,255,0.1);
+  background-color: rgba(255,255,255,0.15);
 }
 
 .player-progress {
-  height: 4px;
+  height: 3px;
   background-color: rgba(255,255,255,0.2);
   border-radius: 2px;
-  margin: 12px 0;
+  margin: 8px 0;
   position: relative;
 }
 
@@ -613,8 +702,8 @@ body, page {
 /* ====== 列表项(历史/收藏) ====== */
 .list-item {
   flex-direction: row;
-  padding: 12px var(--space-4);
-  gap: 12px;
+  padding: var(--space-3) var(--space-4);
+  gap: var(--space-3);
   align-items: center;
   border-bottom-width: 1px;
   border-bottom-style: solid;
@@ -622,10 +711,10 @@ body, page {
 }
 
 .list-poster {
-  width: 70px;
-  height: 100px;
-  border-radius: 8px;
-  background-color: var(--color-bg-elev);
+  width: 64px;
+  height: 96px;
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg-elev2);
   overflow: hidden;
 }
 
@@ -638,7 +727,7 @@ body, page {
 .list-title {
   font-size: var(--font-md);
   color: var(--color-text);
-  font-weight: 500;
+  font-weight: 600;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
@@ -650,16 +739,17 @@ body, page {
 }
 
 .list-action {
-  padding: 6px 10px;
-  border-radius: 6px;
-  background-color: var(--color-bg-elev);
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-primary-soft);
   font-size: var(--font-xs);
-  color: var(--color-text);
+  color: var(--color-primary-light);
+  font-weight: 600;
 }
 
 /* ====== 设置项 ====== */
 .settings-section {
-  padding: 12px var(--space-4);
+  padding: var(--space-3) var(--space-4);
 }
 
 .settings-item {
@@ -685,20 +775,20 @@ body, page {
 
 .settings-item-arrow {
   color: var(--color-text-mute);
-  font-size: 18px;
+  font-size: 16px;
 }
 
 /* ====== 输入框 ====== */
 .input {
-  height: 44px;
+  height: 48px;
   padding: 0 14px;
   border-radius: var(--radius-md);
-  background-color: var(--color-bg-elev);
+  background-color: var(--color-bg-elev2);
   color: var(--color-text);
   font-size: var(--font-md);
   border-width: 1px;
   border-style: solid;
-  border-color: transparent;
+  border-color: var(--color-border);
 }
 
 .input-focus {
@@ -709,7 +799,7 @@ body, page {
   color: var(--color-text-mute);
 }
 
-/* ====== 按钮 ====== */
+/* ====== 按钮 - LunaTV 风格 ====== */
 .btn {
   height: 44px;
   border-radius: var(--radius-pill);
@@ -720,14 +810,19 @@ body, page {
   font-weight: 600;
 }
 
+/* 主按钮 - 绿色渐变 */
 .btn-primary {
   background-color: var(--color-primary);
   color: #fff;
 }
 
+/* 次按钮 - 玻璃态 */
 .btn-secondary {
-  background-color: var(--color-bg-elev);
+  background-color: var(--color-surface);
   color: var(--color-text);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--color-border);
 }
 
 .btn-ghost {
@@ -775,7 +870,6 @@ body, page {
   border-style: solid;
   border-color: rgba(255,255,255,0.15);
   border-top-color: var(--color-primary);
-  /* animation handled by 'transform' rotate in component if needed */
 }
 
 .error-box {
@@ -836,9 +930,9 @@ body, page {
 
 /* ====== 圆形头像 ====== */
 .avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 18px;
+  width: 48px;
+  height: 48px;
+  border-radius: 24px;
   background-color: var(--color-primary);
   align-items: center;
   justify-content: center;
@@ -846,7 +940,7 @@ body, page {
 
 .avatar-text {
   color: #fff;
-  font-size: var(--font-md);
+  font-size: var(--font-lg);
   font-weight: 700;
 }
 
@@ -861,4 +955,9 @@ body, page {
 }
 .safe-bottom {
   padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* 隐藏滚动条 */
+scroll-view {
+  scrollbar-width: none;
 }

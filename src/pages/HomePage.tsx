@@ -1,7 +1,9 @@
-// 首页 - Banner + 继续观看 + 热门电影/剧集 + 收藏推荐
+// 首页 - 对齐 LunaTV HomeClient 结构
+// HeroBanner 轮播 + 继续观看 + 热门电影/剧集
 import { useEffect, useState, useCallback } from '@lynx-js/react';
 import { useConfig, getAuth, getRecordsLocal } from '../store';
 import { doubanHot } from '../api/endpoints';
+import { imageProxyUrl } from '../api/endpoints-helper';
 import { navigate } from '../lib/router';
 import { VideoCard, HorizontalList } from '../components/VideoCard';
 import { LoadingView, ErrorView } from '../components/Common';
@@ -26,7 +28,6 @@ export function HomePage() {
     setLoading(true);
     setError('');
     try {
-      // douban 接口不需要鉴权,type=movie|tv,tag=热门
       const [m, t] = await Promise.all([
         doubanHot(config.apiBase, 'movie', '热门', 12).catch(() => ({ list: [] as DoubanItem[] })),
         doubanHot(config.apiBase, 'tv', '热门', 12).catch(() => ({ list: [] as DoubanItem[] })),
@@ -54,7 +55,7 @@ export function HomePage() {
     load();
   }, [load]);
 
-  // Banner 轮播
+  // Banner 自动轮播 - LunaTV 8秒间隔
   useEffect(() => {
     if (banner.length <= 1) return;
     const timer = setInterval(() => {
@@ -85,18 +86,18 @@ export function HomePage() {
 
   return (
     <scroll-view scroll-y className="page">
-      {/* Banner */}
+      {/* HeroBanner - LunaTV 风格大图轮播 */}
       {currentBanner ? (
         <view className="banner">
           <image
-            src={currentBanner.poster}
+            src={imageProxyUrl(config.apiBase, currentBanner.poster)}
             style={{ width: '100%', height: '100%' }}
             mode="aspectFill"
           />
           <view className="banner-mask">
             <text className="banner-title">{currentBanner.title}</text>
             <text className="banner-sub">
-              ⭐ {currentBanner.rate} · {currentBanner.year}
+              ⭐ {currentBanner.rate} {currentBanner.year ? `· ${currentBanner.year}` : ''}
             </text>
           </view>
           {banner.length > 1 ? (
@@ -116,11 +117,11 @@ export function HomePage() {
         </view>
       ) : null}
 
-      {/* 继续观看(历史) */}
+      {/* 继续观看 - LunaTV ContinueWatching */}
       {records.length > 0 ? (
         <view className="section">
           <view className="section-header">
-            <text className="section-title">继续观看</text>
+            <text className="section-title">🕐 继续观看</text>
             <view bindtap={() => navigate({ name: 'my' })}>
               <text className="section-action">查看全部 ›</text>
             </view>
@@ -159,11 +160,14 @@ export function HomePage() {
         </view>
       ) : null}
 
+      {/* 热门电影 - LunaTV iconColor: red */}
       <HorizontalList
-        title="🔥 热门电影"
+        title="🎬 热门电影"
         data={hotMovie}
         onActionTap={() => navigate({ name: 'category', type: 'movie' })}
       />
+
+      {/* 热门剧集 - LunaTV iconColor: blue */}
       <HorizontalList
         title="📺 热门剧集"
         data={hotTv}
@@ -172,18 +176,16 @@ export function HomePage() {
 
       {/* 未登录提示 */}
       {!auth.cookie ? (
-        <view
-          className="section"
-          bindtap={() => navigate({ name: 'login' })}
-        >
+        <view className="section">
           <view
+            bindtap={() => navigate({ name: 'login' })}
             style={{
               padding: 16,
-              borderRadius: 12,
-              backgroundColor: 'rgba(99, 102, 241, 0.1)',
+              borderRadius: 14,
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
               borderWidth: 1,
               borderStyle: 'solid',
-              borderColor: 'rgba(99, 102, 241, 0.3)',
+              borderColor: 'rgba(16, 185, 129, 0.3)',
               flexDirection: 'row',
               alignItems: 'center',
               gap: 12,
@@ -194,14 +196,16 @@ export function HomePage() {
               <text style={{ color: '#FFFFFF', fontSize: 15, fontWeight: '600' }}>
                 登录后可搜索和同步收藏
               </text>
-              <text style={{ color: '#A0A0B8', fontSize: 12, marginTop: 2 }}>
+              <text style={{ color: '#6b7280', fontSize: 12, marginTop: 2 }}>
                 点击前往登录页面
               </text>
             </view>
-            <text style={{ color: '#6366F1', fontSize: 14 }}>登录 ›</text>
+            <text style={{ color: '#10b981', fontSize: 14 }}>登录 ›</text>
           </view>
         </view>
       ) : null}
+
+      <view style={{ height: 32 }} />
     </scroll-view>
   );
 }
