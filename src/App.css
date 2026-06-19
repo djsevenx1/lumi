@@ -1,19 +1,17 @@
-/* 全局样式 — Selene 浅色风格(对齐 LunaTV 移动端客户端)
-   配色 / 圆角 / 阴影 / 排版 / 组件都按 Selene 实际观感重做
-   - 浅色背景 #F5F6F8 + 白色卡片 + 玻璃态顶栏
-   - 主色:翠绿 #10B981
-   - 评分强调:玫红 #EC4899 / 金 #FBBF24
-   - 圆角 8-14px 为主,胶囊 999
-   - 极浅阴影 + 大白卡 + iOS segmented control
-   - 暗色文字 #111827,灰色 #6B7280
+/* 全局样式 — Selene 浅色风格(对齐 Selene 移动端客户端实际截图)
+   - 浅色背景 #F5F5F5 + 白色卡片
+   - 主色:Selene 绿 #4CAF50
+   - 评分强调:玫红 #E91E63 / 年份蓝 #1976D2
+   - 圆角 8-12px 为主,胶囊 999
+   - 暗色文字 #1A1A1A,灰色 #666666
 */
 
 :root {
   /* 背景 */
-  --color-bg: #F5F6F8;
+  --color-bg: #F5F5F5;
   --color-bg-elev: #FFFFFF;
   --color-bg-elev2: #FFFFFF;
-  --color-bg-elev3: #F9FAFB;
+  --color-bg-elev3: #FAFAFA;
   --color-surface: rgba(0, 0, 0, 0.04);
   --color-surface-hover: rgba(0, 0, 0, 0.08);
   --color-border: rgba(0, 0, 0, 0.06);
@@ -21,26 +19,26 @@
   --color-glass: rgba(255, 255, 255, 0.85);
 
   /* 文字 */
-  --color-text: #111827;
-  --color-text-sub: #4B5563;
-  --color-text-mute: #9CA3AF;
-  --color-text-faint: #D1D5DB;
+  --color-text: #1A1A1A;
+  --color-text-sub: #666666;
+  --color-text-mute: #999999;
+  --color-text-faint: #CCCCCC;
 
-  /* 主色 - Selene 翠绿 */
-  --color-primary: #10B981;
-  --color-primary-dark: #059669;
-  --color-primary-light: #34D399;
-  --color-primary-soft: rgba(16, 185, 129, 0.12);
-  --color-primary-glow: rgba(16, 185, 129, 0.3);
+  /* 主色 - Selene 绿 */
+  --color-primary: #4CAF50;
+  --color-primary-dark: #2E7D32;
+  --color-primary-light: #66BB6A;
+  --color-primary-soft: rgba(76, 175, 80, 0.12);
+  --color-primary-glow: rgba(76, 175, 80, 0.3);
 
   /* 强调色 */
-  --color-accent: #EC4899; /* 评分玫红 */
-  --color-gold: #FBBF24; /* 高分金 */
-  --color-success: #22C55E;
-  --color-warning: #F59E0B;
-  --color-error: #EF4444;
-  --color-info: #3B82F6;
-  --color-purple: #A855F7;
+  --color-accent: #E91E63; /* 评分玫红 */
+  --color-gold: #FFB800; /* 高分金 */
+  --color-success: #4CAF50;
+  --color-warning: #FF9800;
+  --color-error: #F44336;
+  --color-info: #1976D2; /* 年份蓝 */
+  --color-purple: #9C27B0;
 
   /* 圆角 */
   --radius-sm: 6px;
@@ -917,7 +915,6 @@ body, page {
   font-weight: 700;
   color: var(--color-text-mute);
   letter-spacing: 0.5px;
-  text-transform: uppercase;
   margin-bottom: 4px;
 }
 

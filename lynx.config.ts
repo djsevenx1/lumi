@@ -12,7 +12,12 @@ export default defineConfig({
         return `${url}?fullscreen=true`
       },
     }),
-    pluginReactLynx(),
+    pluginReactLynx({
+      // Lynx 默认不继承普通 CSS 属性(color/font-size/font-weight 等),
+      // 必须显式开启,否则父元素设的文字样式不会传递给子 text 元素,
+      // 导致大面积样式失效、布局错位。
+      enableCSSInheritance: true,
+    }),
     pluginTypeCheck(),
   ],
 })
