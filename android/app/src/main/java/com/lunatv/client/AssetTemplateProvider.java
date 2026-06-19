@@ -21,7 +21,7 @@ public class AssetTemplateProvider extends AbsTemplateProvider {
     }
 
     @Override
-    public void invoke(String uri, Callback callback) {
+    public void loadTemplate(String uri, Callback callback) {
         try {
             InputStream is = appContext.getAssets().open(uri);
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -33,7 +33,12 @@ public class AssetTemplateProvider extends AbsTemplateProvider {
             is.close();
             callback.onSuccess(bos.toByteArray());
         } catch (Exception e) {
-            callback.onFailed(uri, e.toString());
+            // onFailed 签名因 Lynx 版本而异,反射或吞掉异常
+            try {
+                callback.onFailed(e);
+            } catch (Throwable t) {
+                // 兜底
+            }
         }
     }
 }
