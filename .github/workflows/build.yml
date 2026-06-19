@@ -30,7 +30,9 @@ jobs:
 
       - name: Setup pnpm
         run: |
-          corepack prepare pnpm@latest --activate
+          # 固定 pnpm 10.x:pnpm 11.x 默认启用 minimumReleaseAge=24h 的 supply-chain 检查,
+          # 会在 install 前拒绝最近发布的包。本项目依赖里有 24h 内的新版本(@sigx/lynx-* 等)。
+          corepack prepare pnpm@10.28.1 --activate
           pnpm --version
 
       - name: Get pnpm store directory
