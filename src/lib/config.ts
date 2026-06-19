@@ -9,7 +9,7 @@ export interface AppConfig {
 }
 
 export const defaultConfig: AppConfig = {
-  apiBase: '', // 首次启动时让用户填
+  apiBase: 'https://ys.fn1.xx.kg', // 默认 LunaTV 后端地址,首次启动自动配置
   siteName: 'LunaTV',
   enableDouban: true,
   enableLogin: true,

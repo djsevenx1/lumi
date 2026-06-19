@@ -1,7 +1,9 @@
-// 首页 - 对齐 LunaTV HomeClient 结构
-// HeroBanner 轮播 + 继续观看 + 热门电影/剧集
+// 首页 - Selene 风格(分段切换 + 顶栏搜索 + 横向滚动)
+// 入口:Selene 风格 segmented 切换"首页 / 收藏夹"
+// 顶栏:🔍 搜索(跳转搜索页) + 主题/个人入口
+// 主体:继续观看 / 热门电影 / 热门剧集 / 热门综艺 / 热门动漫
 import { useEffect, useState, useCallback } from '@lynx-js/react';
-import { useConfig, getAuth, getRecordsLocal } from '../store';
+import { useConfig, getAuth, getRecordsLocal, getFavoritesLocal } from '../store';
 import { doubanHot } from '../api/endpoints';
 import { imageProxyUrl } from '../api/endpoints-helper';
 import { navigate } from '../lib/router';
@@ -9,15 +11,22 @@ import { VideoCard, HorizontalList } from '../components/VideoCard';
 import { LoadingView, ErrorView } from '../components/Common';
 import type { SearchResult, DoubanItem, PlayRecord } from '../api/types';
 
+type HomeTab = 'home' | 'fav';
+
 export function HomePage() {
   const [config] = useConfig();
+  const [tab, setTab] = useState<HomeTab>('home');
+
+  // 内容列表
   const [hotMovie, setHotMovie] = useState<SearchResult[]>([]);
   const [hotTv, setHotTv] = useState<SearchResult[]>([]);
-  const [banner, setBanner] = useState<DoubanItem[]>([]);
+  const [hotVariety, setHotVariety] = useState<SearchResult[]>([]);
+  const [hotAnime, setHotAnime] = useState<SearchResult[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [records, setRecords] = useState<PlayRecord[]>([]);
-  const [bannerIndex, setBannerIndex] = useState(0);
+  const [favorites, setFavorites] = useState(getFavoritesLocal());
 
   const load = useCallback(async () => {
     if (!config.apiBase) {
@@ -28,22 +37,28 @@ export function HomePage() {
     setLoading(true);
     setError('');
     try {
-      const [m, t] = await Promise.all([
-        doubanHot(config.apiBase, 'movie', '热门', 12).catch(() => ({ list: [] as DoubanItem[] })),
-        doubanHot(config.apiBase, 'tv', '热门', 12).catch(() => ({ list: [] as DoubanItem[] })),
-      ]);
-      const toCard = (it: DoubanItem): SearchResult => ({
+      const toCard = (it: DoubanItem, source_name = '豆瓣'): any => ({
         id: it.id,
         title: it.title,
         poster: it.poster,
         year: it.year,
+        rate: it.rate,
         source: '',
-        source_name: '豆瓣',
+        source_name,
       });
-      setHotMovie(m.list.map(toCard));
-      setHotTv(t.list.map(toCard));
-      setBanner(m.list.slice(0, 5));
+      const safe = (p: Promise<any>) => p.catch(() => ({ list: [] as DoubanItem[] }));
+      const [m, t, v, a] = await Promise.all([
+        safe(doubanHot(config.apiBase, 'movie', '热门', 12)),
+        safe(doubanHot(config.apiBase, 'tv', '热门', 12)),
+        safe(doubanHot(config.apiBase, 'tv', '综艺', 12)),
+        safe(doubanHot(config.apiBase, 'tv', '动漫', 12)),
+      ]);
+      setHotMovie(m.list.map((x: DoubanItem) => toCard(x)));
+      setHotTv(t.list.map((x: DoubanItem) => toCard(x)));
+      setHotVariety(v.list.map((x: DoubanItem) => toCard(x)));
+      setHotAnime(a.list.map((x: DoubanItem) => toCard(x)));
       setRecords(getRecordsLocal());
+      setFavorites(getFavoritesLocal());
     } catch (e: any) {
       setError(e?.message || '加载失败');
     } finally {
@@ -55,157 +70,206 @@ export function HomePage() {
     load();
   }, [load]);
 
-  // Banner 自动轮播 - LunaTV 8秒间隔
-  useEffect(() => {
-    if (banner.length <= 1) return;
-    const timer = setInterval(() => {
-      setBannerIndex((i) => (i + 1) % banner.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, [banner.length]);
-
   if (loading) return <LoadingView text="加载首页内容..." />;
-  if (error)
+  if (error) {
     return (
       <view>
         <ErrorView message={error} onRetry={load} />
         <view style={{ padding: 16 }}>
           <view
             bindtap={() => navigate({ name: 'settings' })}
-            className="btn btn-secondary"
+            className="detail-btn-primary"
             style={{ alignSelf: 'flex-start' }}
           >
-            <text>去配置</text>
+            <text style={{ color: '#fff', fontWeight: '700' }}>去配置</text>
           </view>
         </view>
       </view>
     );
+  }
 
-  const currentBanner = banner[bannerIndex] || banner[0];
-  const auth = getAuth();
+  // 渲染"首页"tab 内容
+  function renderHome() {
+    return (
+      <view>
+        {/* 继续观看 */}
+        {records.length > 0 ? (
+          <view className="section">
+            <view className="section-header">
+              <text className="section-title">🕐 继续观看</text>
+              <view bindtap={() => navigate({ name: 'my' })}>
+                <text className="section-action">查看全部 ›</text>
+              </view>
+            </view>
+            <scroll-view
+              scroll-x
+              className="horizontal-scroll-wide"
+              show-scrollbar={false}
+            >
+              {records.slice(0, 8).map((r, i) => (
+                <view
+                  key={i}
+                  bindtap={() =>
+                    navigate({
+                      name: 'play',
+                      source: r.source,
+                      id: r.id,
+                      episode: r.episodeIndex,
+                      title: r.title,
+                      poster: r.poster,
+                    })
+                  }
+                >
+                  <VideoCard
+                    data={{
+                      id: r.id,
+                      title: r.title,
+                      poster: r.poster,
+                      source: r.source,
+                      source_name: r.source_name || '播放记录',
+                      remarks: `看到 ${r.episodeName}`,
+                    }}
+                  />
+                </view>
+              ))}
+            </scroll-view>
+          </view>
+        ) : null}
+
+        <HorizontalList
+          title="🎬 热门电影"
+          data={hotMovie as any}
+          onActionTap={() => navigate({ name: 'category', type: 'movie' })}
+        />
+        <HorizontalList
+          title="📺 热门剧集"
+          data={hotTv as any}
+          onActionTap={() => navigate({ name: 'category', type: 'tv' })}
+        />
+        <HorizontalList
+          title="🎭 热门综艺"
+          data={hotVariety as any}
+          onActionTap={() => navigate({ name: 'category', type: 'variety' })}
+        />
+        <HorizontalList
+          title="🌸 热门动漫"
+          data={hotAnime as any}
+          onActionTap={() => navigate({ name: 'category', type: 'anime' })}
+        />
+
+        <view style={{ height: 32 }} />
+      </view>
+    );
+  }
+
+  // 渲染"收藏夹"tab 内容
+  function renderFav() {
+    if (favorites.length === 0) {
+      return (
+        <view style={{ padding: 32, alignItems: 'center' }}>
+          <text style={{ fontSize: 40, marginBottom: 12 }}>📁</text>
+          <text style={{ fontSize: 16, color: '#111827', fontWeight: '700' }}>
+            收藏夹是空的
+          </text>
+          <text style={{ fontSize: 13, color: '#6b7280', marginTop: 6 }}>
+            在详情页点击"收藏"按钮即可添加
+          </text>
+        </view>
+      );
+    }
+    return (
+      <view>
+        <scroll-view
+          scroll-x={false}
+          scroll-y
+          className="horizontal-scroll-wide"
+          show-scrollbar={false}
+          style={{ flexDirection: 'row', flexWrap: 'wrap', padding: '0 16px', gap: 12 }}
+        >
+          {favorites.map((f, i) => (
+            <view key={`${f.key}-${i}`} style={{ marginRight: 0, marginBottom: 12 }}>
+              <VideoCard
+                data={{
+                  id: f.id || (f as any).save_key,
+                  title: f.title,
+                  poster: f.poster || (f as any).cover,
+                  source: f.source,
+                  source_name: f.source_name || '收藏',
+                  year: f.year,
+                  remarks: f.remarks,
+                }}
+                width="normal"
+              />
+            </view>
+          ))}
+        </scroll-view>
+        <view style={{ height: 32 }} />
+      </view>
+    );
+  }
 
   return (
     <scroll-view scroll-y className="page">
-      {/* HeroBanner - LunaTV 风格大图轮播 */}
-      {currentBanner ? (
-        <view className="banner">
-          <image
-            src={imageProxyUrl(config.apiBase, currentBanner.poster)}
-            style={{ width: '100%', height: '100%' }}
-            mode="aspectFill"
-          />
-          <view className="banner-mask">
-            <text className="banner-title">{currentBanner.title}</text>
-            <text className="banner-sub">
-              ⭐ {currentBanner.rate} {currentBanner.year ? `· ${currentBanner.year}` : ''}
-            </text>
-          </view>
-          {banner.length > 1 ? (
-            <view className="banner-dots">
-              {banner.map((_, i) => (
-                <view
-                  key={i}
-                  className={
-                    i === bannerIndex
-                      ? 'banner-dot banner-dot-active'
-                      : 'banner-dot'
-                  }
-                />
-              ))}
-            </view>
-          ) : null}
-        </view>
-      ) : null}
-
-      {/* 继续观看 - LunaTV ContinueWatching */}
-      {records.length > 0 ? (
-        <view className="section">
-          <view className="section-header">
-            <text className="section-title">🕐 继续观看</text>
-            <view bindtap={() => navigate({ name: 'my' })}>
-              <text className="section-action">查看全部 ›</text>
-            </view>
-          </view>
-          <scroll-view
-            scroll-x
-            className="horizontal-scroll-wide"
-            show-scrollbar={false}
-          >
-            {records.slice(0, 8).map((r, i) => (
-              <view
-                key={i}
-                bindtap={() =>
-                  navigate({
-                    name: 'play',
-                    source: r.source,
-                    id: r.id,
-                    episode: r.episodeIndex,
-                    title: r.title,
-                    poster: r.poster,
-                  })
-                }
-              >
-                <VideoCard
-                  data={{
-                    id: r.id,
-                    title: r.title,
-                    poster: r.poster,
-                    source: r.source,
-                    remarks: `看到 ${r.episodeName}`,
-                  }}
-                />
-              </view>
-            ))}
-          </scroll-view>
-        </view>
-      ) : null}
-
-      {/* 热门电影 - LunaTV iconColor: red */}
-      <HorizontalList
-        title="🎬 热门电影"
-        data={hotMovie}
-        onActionTap={() => navigate({ name: 'category', type: 'movie' })}
-      />
-
-      {/* 热门剧集 - LunaTV iconColor: blue */}
-      <HorizontalList
-        title="📺 热门剧集"
-        data={hotTv}
-        onActionTap={() => navigate({ name: 'category', type: 'tv' })}
-      />
-
-      {/* 未登录提示 */}
-      {!auth.cookie ? (
-        <view className="section">
+      {/* 顶栏 - Selene 风格:左标题,右搜索+个人 */}
+      <view className="app-header">
+        <text className="app-title">LunaTV</text>
+        <view style={{ flexDirection: 'row', gap: 8 }}>
           <view
-            bindtap={() => navigate({ name: 'login' })}
-            style={{
-              padding: 16,
-              borderRadius: 14,
-              backgroundColor: 'rgba(16, 185, 129, 0.1)',
-              borderWidth: 1,
-              borderStyle: 'solid',
-              borderColor: 'rgba(16, 185, 129, 0.3)',
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 12,
-            }}
+            className="icon-btn"
+            bindtap={() => navigate({ name: 'search' })}
           >
-            <text style={{ fontSize: 28 }}>👋</text>
-            <view style={{ flex: 1 }}>
-              <text style={{ color: '#FFFFFF', fontSize: 15, fontWeight: '600' }}>
-                登录后可搜索和同步收藏
-              </text>
-              <text style={{ color: '#6b7280', fontSize: 12, marginTop: 2 }}>
-                点击前往登录页面
-              </text>
-            </view>
-            <text style={{ color: '#10b981', fontSize: 14 }}>登录 ›</text>
+            <text className="icon-btn-text">🔍</text>
+          </view>
+          <view
+            className="icon-btn"
+            bindtap={() => navigate({ name: 'my' })}
+          >
+            <text className="icon-btn-text">👤</text>
           </view>
         </view>
-      ) : null}
+      </view>
 
-      <view style={{ height: 32 }} />
+      {/* 分段切换 首页 / 收藏夹 */}
+      <view className="segmented">
+        <view
+          className={
+            tab === 'home'
+              ? 'segmented-item segmented-item-active'
+              : 'segmented-item'
+          }
+          bindtap={() => setTab('home')}
+        >
+          <text
+            className={
+              tab === 'home'
+                ? 'segmented-item-text segmented-item-text-active'
+                : 'segmented-item-text'
+            }
+          >
+            首页
+          </text>
+        </view>
+        <view
+          className={
+            tab === 'fav'
+              ? 'segmented-item segmented-item-active'
+              : 'segmented-item'
+          }
+          bindtap={() => setTab('fav')}
+        >
+          <text
+            className={
+              tab === 'fav'
+                ? 'segmented-item-text segmented-item-text-active'
+                : 'segmented-item-text'
+            }
+          >
+            收藏夹
+          </text>
+        </view>
+      </view>
+
+      {tab === 'home' ? renderHome() : renderFav()}
     </scroll-view>
   );
 }

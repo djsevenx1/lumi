@@ -66,14 +66,16 @@ export function useRoute(): [Route, (r: Route) => void, () => boolean] {
   return [r, navigate, back];
 }
 
-// Tab 配置
+// Tab 配置 - Selene 5 项:首页/电影/剧集/动漫/综艺
 export const TABS: Array<{ name: Route['name']; label: string; icon: string }> = [
   { name: 'home', label: '首页', icon: '🏠' },
-  { name: 'search', label: '搜索', icon: '🔍' },
+  { name: 'category', label: '电影', icon: '🎬' }, // type=movie 由 HomePage 处理跳转
+  { name: 'category', label: '剧集', icon: '📺' },
+  { name: 'category', label: '动漫', icon: '🎭' },
   { name: 'my', label: '我的', icon: '👤' },
-  { name: 'settings', label: '设置', icon: '⚙️' },
 ];
 
 export function isTabRoute(r: Route): boolean {
+  if (r.name === 'category') return true;
   return TABS.some((t) => t.name === r.name);
 }
