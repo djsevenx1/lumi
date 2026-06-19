@@ -1,6 +1,6 @@
-// 登录页
+// 登录页 - Selene 浅色风格
 import { useState } from '@lynx-js/react';
-import { useConfig, setAuth, getAuth } from '../store';
+import { useConfig, setAuth } from '../store';
 import { login, register } from '../api/endpoints';
 import { getAuthCookie } from '../api/client';
 import { back, navigate } from '../lib/router';
@@ -47,12 +47,9 @@ export function LoginPage() {
         );
         if (!r.ok) throw new Error(r.error || r.message || '注册失败');
         if (r.needDelay) {
-          // upstash 模式需要等待数据同步
           await new Promise((r) => setTimeout(r, 2000));
         }
       }
-      // 登录/注册成功后,cookie 已被 client.ts 自动提取存储
-      // 通知 store 刷新 auth 状态
       const cookie = getAuthCookie();
       setAuth(cookie);
       back();
@@ -67,23 +64,72 @@ export function LoginPage() {
 
   return (
     <view className="page page-no-tabbar">
+      {/* 顶栏:返回 + 跳过 */}
       <view
         className="app-header"
         style={{ borderBottomWidth: 0, backgroundColor: 'transparent' }}
       >
         <view className="icon-btn" bindtap={() => back()}>
-          <text style={{ color: '#FFFFFF', fontSize: 18 }}>‹</text>
+          <text className="icon-btn-text">‹</text>
+        </view>
+        <view
+          className="icon-btn"
+          bindtap={() => navigate({ name: 'home' })}
+        >
+          <text className="icon-btn-text">✕</text>
         </view>
       </view>
+
       <view className="form-container col">
+        {/* 大标题 */}
         <text className="form-title">
-          {mode === 'login' ? '欢迎回来' : '创建账号'}
+          {mode === 'login' ? '欢迎回来 👋' : '创建账号 ✨'}
         </text>
         <text className="form-sub">
           {mode === 'login'
-            ? '登录后可同步收藏和播放记录'
-            : '使用 LunaTV 服务注册新账号'}
+            ? '登录后可同步收藏和播放记录,跨设备无缝续播'
+            : '使用 LunaTV 服务注册新账号,支持邀请码'}
         </text>
+
+        {/* segmented 切换登录/注册 */}
+        <view className="segmented segmented-nomargin">
+          <view
+            className={
+              mode === 'login'
+                ? 'segmented-item segmented-item-active'
+                : 'segmented-item'
+            }
+            bindtap={() => { setMode('login'); setError(''); }}
+          >
+            <text
+              className={
+                mode === 'login'
+                  ? 'segmented-item-text segmented-item-text-active'
+                  : 'segmented-item-text'
+              }
+            >
+              登录
+            </text>
+          </view>
+          <view
+            className={
+              mode === 'register'
+                ? 'segmented-item segmented-item-active'
+                : 'segmented-item'
+            }
+            bindtap={() => { setMode('register'); setError(''); }}
+          >
+            <text
+              className={
+                mode === 'register'
+                  ? 'segmented-item-text segmented-item-text-active'
+                  : 'segmented-item-text'
+              }
+            >
+              注册
+            </text>
+          </view>
+        </view>
 
         <input
           key="input-username"
@@ -120,44 +166,49 @@ export function LoginPage() {
           </>
         ) : null}
 
+        {/* 错误提示 */}
         {error ? (
-          <view
-            style={{
-              padding: 10,
-              borderRadius: 6,
-              backgroundColor: 'rgba(239, 68, 68, 0.1)',
-            }}
-          >
-            <text style={{ color: '#ef4444', fontSize: 13 }}>{error}</text>
+          <view className="error-box">
+            <text className="error-text">{error}</text>
           </view>
         ) : null}
 
+        {/* 主按钮 */}
         <view
           className="btn btn-primary btn-block"
-          style={{ marginTop: 12 }}
+          style={{ marginTop: 8 }}
           bindtap={onSubmit}
         >
-          <text>{mode === 'login' ? '登录' : '注册'}</text>
+          <text className="btn-primary-text">{mode === 'login' ? '登录' : '注册'}</text>
         </view>
 
-        <view
-          style={{
-            marginTop: 16,
-            flexDirection: 'row',
-            justifyContent: 'center',
-          }}
-        >
-          <text style={{ color: '#6b7280', fontSize: 13 }}>
+        {/* 提示 + 后端设置入口 */}
+        <view className="form-link-row">
+          <text className="form-link-text">
             {mode === 'login' ? '还没有账号?' : '已有账号?'}{' '}
           </text>
           <text
-            style={{ color: '#10b981', fontSize: 13, fontWeight: '600' }}
+            className="form-link-action"
             bindtap={() => {
               setError('');
               setMode(mode === 'login' ? 'register' : 'login');
             }}
           >
             {mode === 'login' ? '立即注册' : '前往登录'}
+          </text>
+        </view>
+
+        {/* 提示用户可以设置后端 */}
+        <view className="form-endpoint-row">
+          <text className="form-endpoint-label">服务地址:</text>
+          <text className="form-endpoint-value">
+            {config.apiBase || '未配置'}
+          </text>
+          <text
+            className="form-endpoint-edit"
+            bindtap={() => navigate({ name: 'settings' })}
+          >
+            · 更改
           </text>
         </view>
       </view>

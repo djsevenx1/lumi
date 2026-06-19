@@ -1,5 +1,5 @@
 // 应用主壳 - 路由分发 + 底部 Tab Bar
-import { useRoute, isTabRoute } from './lib/router';
+import { useRoute, isTabRoute, navigate } from './lib/router';
 import { TabBar } from './components/TabBar';
 import { HomePage } from './pages/HomePage';
 import { SearchPage } from './pages/SearchPage';
@@ -9,16 +9,17 @@ import { MyPage } from './pages/MyPage';
 import { LoginPage } from './pages/LoginPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { CategoryPage } from './pages/CategoryPage';
-import { useConfig } from './store';
-import { navigate } from './lib/router';
+import { useConfig, useAuth } from './store';
 import { useEffect } from '@lynx-js/react';
 import './App.css';
 
 export function App() {
   const [route] = useRoute();
   const [config] = useConfig();
+  const [auth] = useAuth();
 
-  // 首次启动若未配置,自动跳到设置
+  // 启动引导:仅在"未配置后端"时才去设置页;
+  // 已配置但未登录 -> 留给用户自行去登录页(不强制)
   useEffect(() => {
     if (!config.apiBase) {
       navigate({ name: 'settings' });

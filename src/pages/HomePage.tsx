@@ -3,9 +3,8 @@
 // 顶栏:🔍 搜索(跳转搜索页) + 主题/个人入口
 // 主体:继续观看 / 热门电影 / 热门剧集 / 热门综艺 / 热门动漫
 import { useEffect, useState, useCallback } from '@lynx-js/react';
-import { useConfig, getAuth, getRecordsLocal, getFavoritesLocal } from '../store';
+import { useConfig, getRecordsLocal, getFavoritesLocal } from '../store';
 import { doubanHot } from '../api/endpoints';
-import { imageProxyUrl } from '../api/endpoints-helper';
 import { navigate } from '../lib/router';
 import { VideoCard, HorizontalList } from '../components/VideoCard';
 import { LoadingView, ErrorView } from '../components/Common';
@@ -81,7 +80,7 @@ export function HomePage() {
             className="detail-btn-primary"
             style={{ alignSelf: 'flex-start' }}
           >
-            <text style={{ color: '#fff', fontWeight: '700' }}>去配置</text>
+            <text className="detail-btn-primary-text">去配置</text>
           </view>
         </view>
       </view>
@@ -166,12 +165,10 @@ export function HomePage() {
   function renderFav() {
     if (favorites.length === 0) {
       return (
-        <view style={{ padding: 32, alignItems: 'center' }}>
-          <text style={{ fontSize: 40, marginBottom: 12 }}>📁</text>
-          <text style={{ fontSize: 16, color: '#111827', fontWeight: '700' }}>
-            收藏夹是空的
-          </text>
-          <text style={{ fontSize: 13, color: '#6b7280', marginTop: 6 }}>
+        <view className="home-fav-empty">
+          <text className="home-fav-empty-icon">📁</text>
+          <text className="home-fav-empty-title">收藏夹是空的</text>
+          <text className="home-fav-empty-sub">
             在详情页点击"收藏"按钮即可添加
           </text>
         </view>
@@ -179,15 +176,9 @@ export function HomePage() {
     }
     return (
       <view>
-        <scroll-view
-          scroll-x={false}
-          scroll-y
-          className="horizontal-scroll-wide"
-          show-scrollbar={false}
-          style={{ flexDirection: 'row', flexWrap: 'wrap', padding: '0 16px', gap: 12 }}
-        >
+        <view className="home-fav-grid">
           {favorites.map((f, i) => (
-            <view key={`${f.key}-${i}`} style={{ marginRight: 0, marginBottom: 12 }}>
+            <view key={`${f.key}-${i}`} className="home-fav-cell">
               <VideoCard
                 data={{
                   id: f.id || (f as any).save_key,
@@ -202,7 +193,7 @@ export function HomePage() {
               />
             </view>
           ))}
-        </scroll-view>
+        </view>
         <view style={{ height: 32 }} />
       </view>
     );
@@ -213,7 +204,7 @@ export function HomePage() {
       {/* 顶栏 - Selene 风格:左标题,右搜索+个人 */}
       <view className="app-header">
         <text className="app-title">LunaTV</text>
-        <view style={{ flexDirection: 'row', gap: 8 }}>
+        <view className="app-header-actions">
           <view
             className="icon-btn"
             bindtap={() => navigate({ name: 'search' })}

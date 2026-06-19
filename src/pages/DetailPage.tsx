@@ -1,4 +1,4 @@
-// 详情页 - 简介 + 集数 + 收藏/播放
+// 详情页 - 简介 + 集数 + 收藏/播放 - Selene 浅色风格
 import { useEffect, useState, useCallback } from '@lynx-js/react';
 import { useConfig, useFavorites, isFavoritedLocal, setFavoritesLocal, getAuth } from '../store';
 import { detail, addFavorite, removeFavorite } from '../api/endpoints';
@@ -100,7 +100,7 @@ export function DetailPage({ source, id }: Props) {
       <view className="page page-no-tabbar">
         <ErrorView message={error || '详情不存在'} onRetry={load} />
         <view style={{ padding: 16 }}>
-          <view bindtap={() => back()} className="btn btn-secondary">
+          <view bindtap={() => back()} className="btn btn-secondary btn-block">
             <text>返回</text>
           </view>
         </view>
@@ -126,13 +126,13 @@ export function DetailPage({ source, id }: Props) {
         {poster ? (
           <image
             src={poster}
-            style={{ width: '100%', height: '100%' }}
+            className="detail-hero-image"
             mode="aspectFill"
           />
         ) : null}
         <view className="detail-hero-mask" />
         <view className="detail-back-btn" bindtap={() => back()}>
-          <text style={{ color: '#FFFFFF', fontSize: 18 }}>‹</text>
+          <text className="detail-back-btn-text">‹</text>
         </view>
       </view>
 
@@ -142,7 +142,7 @@ export function DetailPage({ source, id }: Props) {
           {poster ? (
             <image
               src={poster}
-              style={{ width: '100%', height: '100%' }}
+              className="detail-poster-image"
               mode="aspectFill"
             />
           ) : null}
@@ -166,7 +166,7 @@ export function DetailPage({ source, id }: Props) {
       {/* 操作按钮 */}
       <view className="detail-actions">
         <view className="detail-btn-primary" bindtap={() => onPlay(0)}>
-          <text>▶ 立即播放</text>
+          <text className="detail-btn-primary-text">▶ 立即播放</text>
         </view>
         <view
           className={
@@ -174,7 +174,9 @@ export function DetailPage({ source, id }: Props) {
           }
           bindtap={toggleFavorite}
         >
-          <text>{isFav ? '★ 已收藏' : '☆ 收藏'}</text>
+          <text className="detail-btn-secondary-text">
+            {isFav ? '★ 已收藏' : '☆ 收藏'}
+          </text>
         </view>
       </view>
 
@@ -188,18 +190,10 @@ export function DetailPage({ source, id }: Props) {
 
       {/* 集数 */}
       {data.episodes && data.episodes.length > 0 ? (
-        <view style={{ marginTop: 16 }}>
-          <view
-            style={{
-              paddingLeft: 16,
-              paddingRight: 16,
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
+        <view className="detail-episodes">
+          <view className="detail-episodes-header">
             <text className="section-title">选集 ({data.episodes.length})</text>
-            <text style={{ color: '#A0A0B8', fontSize: 12 }}>
+            <text className="detail-episodes-sub">
               选集 · 第{activeEpisode + 1}集
             </text>
           </view>
@@ -215,10 +209,10 @@ export function DetailPage({ source, id }: Props) {
                 bindtap={() => setActiveEpisode(i)}
               >
                 <text
-                  style={
+                  className={
                     activeEpisode === i
-                      ? { color: '#FFFFFF', fontSize: 13, fontWeight: '600' }
-                      : { color: '#FFFFFF', fontSize: 13 }
+                      ? 'episode-chip-text episode-chip-text-active'
+                      : 'episode-chip-text'
                   }
                 >
                   {episodeNames[i] || `第${i + 1}集`}
@@ -226,12 +220,7 @@ export function DetailPage({ source, id }: Props) {
               </view>
             ))}
           </view>
-          <view
-            style={{
-              padding: 16,
-              paddingTop: 12,
-            }}
-          >
+          <view className="detail-play-bar">
             <view
               className="btn btn-primary btn-block"
               bindtap={() => onPlay(activeEpisode)}

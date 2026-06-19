@@ -1,4 +1,4 @@
-// 分类页(根据 type 浏览更多内容)
+// 分类页(根据 type 浏览更多内容) - Selene 浅色风格
 import { useEffect, useState, useCallback } from '@lynx-js/react';
 import { useConfig } from '../store';
 import { doubanHot } from '../api/endpoints';
@@ -65,7 +65,7 @@ export function CategoryPage({ type }: Props) {
     <view className="page page-no-tabbar">
       <view className="app-header">
         <view className="icon-btn" bindtap={() => back()}>
-          <text style={{ color: '#FFFFFF', fontSize: 18 }}>‹</text>
+          <text className="icon-btn-text">‹</text>
         </view>
         <text className="app-title">{label}</text>
         <view style={{ width: 36 }} />
@@ -78,18 +78,12 @@ export function CategoryPage({ type }: Props) {
       ) : data.length === 0 ? (
         <EmptyView icon="📭" text={`暂无${label}内容`} />
       ) : (
-        <scroll-view scroll-y style={{ flex: 1 }}>
-          <view
-            style={{
-              flexDirection: 'row',
-              flexWrap: 'wrap',
-              padding: 12,
-              gap: 12,
-            }}
-          >
+        <scroll-view scroll-y className="category-scroll">
+          <view className="category-grid">
             {data.map((d, i) => (
               <view
                 key={`${d.source}-${d.id}-${i}`}
+                className="category-cell"
                 bindtap={() => navigate({ name: 'detail', source: d.source, id: d.id })}
               >
                 <VideoCard data={d as any} />

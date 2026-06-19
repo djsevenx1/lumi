@@ -1,4 +1,4 @@
-// 搜索栏 - 对齐 LunaTV 搜索框风格
+// 搜索栏 - Selene 浅色风格
 import { useState } from '@lynx-js/react';
 
 interface Props {
@@ -19,7 +19,7 @@ export function SearchBar({
   const [resetKey, setResetKey] = useState(0);
   return (
     <view className="search-bar">
-      <text style={{ fontSize: 18, color: '#6b7280' }}>🔍</text>
+      <text className="search-bar-icon">🔍</text>
       <input
         key={`search-${resetKey}`}
         className="search-input"
@@ -36,16 +36,9 @@ export function SearchBar({
             onChange('');
             setResetKey((k) => k + 1);
           }}
-          style={{
-            width: 28,
-            height: 28,
-            borderRadius: 14,
-            backgroundColor: 'rgba(255,255,255,0.1)',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
+          className="search-clear-btn"
         >
-          <text style={{ color: '#6b7280', fontSize: 14 }}>✕</text>
+          <text className="search-clear-text">✕</text>
         </view>
       ) : null}
     </view>
