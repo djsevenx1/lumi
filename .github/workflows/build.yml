@@ -1,10 +1,7 @@
 name: Build
 
 on:
-  push:
-    branches: [main, master, develop]
-  pull_request:
-    branches: [main, master, develop]
+  workflow_call:
   workflow_dispatch:
 
 permissions:
@@ -27,7 +24,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'pnpm'
 
       - name: Enable Corepack
         run: corepack enable
