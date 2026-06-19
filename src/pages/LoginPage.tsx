@@ -1,6 +1,6 @@
 // 登录页 - Selene 浅色风格
 import { useState } from '@lynx-js/react';
-import { useConfig, setAuth } from '../store';
+import { useConfig, setConfig, setAuth } from '../store';
 import { login, register } from '../api/endpoints';
 import { getAuthCookie } from '../api/client';
 import { back, navigate } from '../lib/router';
@@ -11,6 +11,7 @@ type Mode = 'login' | 'register';
 export function LoginPage() {
   const [config] = useConfig();
   const [mode, setMode] = useState<Mode>('login');
+  const [apiBase, setApiBase] = useState(config.apiBase || '');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -19,9 +20,13 @@ export function LoginPage() {
   const [error, setError] = useState('');
 
   async function onSubmit() {
-    if (!config.apiBase) {
-      setError('请先在设置里配置 LunaTV 服务地址');
+    const base = apiBase.trim();
+    if (!base) {
+      setError('请先填写 LunaTV 服务地址');
       return;
+    }
+    if (base !== config.apiBase) {
+      setConfig({ ...config, apiBase: base });
     }
     if (!username.trim() || !password) {
       setError('请输入用户名和密码');
@@ -35,11 +40,11 @@ export function LoginPage() {
     setError('');
     try {
       if (mode === 'login') {
-        const r = await login(config.apiBase, username.trim(), password);
+        const r = await login(base, username.trim(), password);
         if (!r.ok) throw new Error(r.error || r.message || '登录失败');
       } else {
         const r = await register(
-          config.apiBase,
+          base,
           username.trim(),
           password,
           confirmPassword,
@@ -132,6 +137,13 @@ export function LoginPage() {
         </view>
 
         <input
+          key="input-apibase"
+          className="input"
+          placeholder="服务地址(如 https://luna.tv)"
+          placeholder-class="input-placeholder"
+          bindinput={(e: any) => setApiBase(e.detail.value)}
+        />
+        <input
           key="input-username"
           className="input"
           placeholder="用户名"
@@ -198,17 +210,13 @@ export function LoginPage() {
           </text>
         </view>
 
-        {/* 提示用户可以设置后端 */}
-        <view className="form-endpoint-row">
-          <text className="form-endpoint-label">服务地址:</text>
-          <text className="form-endpoint-value">
-            {config.apiBase || '未配置'}
-          </text>
+        {/* 跳转完整设置 */}
+        <view className="form-link-row">
           <text
-            className="form-endpoint-edit"
+            className="form-link-action"
             bindtap={() => navigate({ name: 'settings' })}
           >
-            · 更改
+            高级设置 →
           </text>
         </view>
       </view>

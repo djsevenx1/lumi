@@ -828,6 +828,7 @@ body, page {
 
 /* ====== Form / Input / Button - 浅色 ====== */
 .form-container {
+  display: flex;
   padding: var(--space-6) var(--space-5);
   gap: var(--space-3);
 }
