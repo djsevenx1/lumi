@@ -18,11 +18,14 @@ export function App() {
   const [config] = useConfig();
   const [auth] = useAuth();
 
-  // 启动引导:仅在"未配置后端"时才去设置页;
-  // 已配置但未登录 -> 留给用户自行去登录页(不强制)
+  // 启动引导:
+  // 1. 未配置后端 -> 设置页
+  // 2. 已配置但未登录 -> 登录页
   useEffect(() => {
     if (!config.apiBase) {
       navigate({ name: 'settings' });
+    } else if (!auth.cookie) {
+      navigate({ name: 'login' });
     }
   }, []);
 

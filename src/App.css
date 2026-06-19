@@ -1,44 +1,42 @@
-/* 全局样式 — Selene 浅色风格(对齐 Selene 移动端客户端实际截图)
-   - 浅色背景 #F5F5F5 + 白色卡片
-   - 主色:Selene 绿 #4CAF50
-   - 评分强调:玫红 #E91E63 / 年份蓝 #1976D2
-   - 圆角 8-12px 为主,胶囊 999
-   - 暗色文字 #1A1A1A,灰色 #666666
+/* 全局样式 — LunaTV 风格(对齐 LunaTV Web 端配色)
+   - 主色:天蓝 #0ea5e9 (sky-500) 系列
+   - 暗色文字 #111827,灰色 #6b7280 (Tailwind gray)
+   - 圆角 8-12px,胶囊 999
 */
 
 :root {
   /* 背景 */
-  --color-bg: #F5F5F5;
+  --color-bg: #f7f7f3;
   --color-bg-elev: #FFFFFF;
   --color-bg-elev2: #FFFFFF;
-  --color-bg-elev3: #FAFAFA;
+  --color-bg-elev3: #f9fafb;
   --color-surface: rgba(0, 0, 0, 0.04);
   --color-surface-hover: rgba(0, 0, 0, 0.08);
   --color-border: rgba(0, 0, 0, 0.06);
   --color-border-strong: rgba(0, 0, 0, 0.12);
   --color-glass: rgba(255, 255, 255, 0.85);
 
-  /* 文字 */
-  --color-text: #1A1A1A;
-  --color-text-sub: #666666;
-  --color-text-mute: #999999;
-  --color-text-faint: #CCCCCC;
+  /* 文字 - Tailwind gray */
+  --color-text: #111827;
+  --color-text-sub: #4b5563;
+  --color-text-mute: #9ca3af;
+  --color-text-faint: #d1d5db;
 
-  /* 主色 - Selene 绿 */
-  --color-primary: #4CAF50;
-  --color-primary-dark: #2E7D32;
-  --color-primary-light: #66BB6A;
-  --color-primary-soft: rgba(76, 175, 80, 0.12);
-  --color-primary-glow: rgba(76, 175, 80, 0.3);
+  /* 主色 - LunaTV 天蓝 sky */
+  --color-primary: #0ea5e9;
+  --color-primary-dark: #0284c7;
+  --color-primary-light: #38bdf8;
+  --color-primary-soft: rgba(14, 165, 233, 0.12);
+  --color-primary-glow: rgba(14, 165, 233, 0.3);
 
   /* 强调色 */
-  --color-accent: #E91E63; /* 评分玫红 */
-  --color-gold: #FFB800; /* 高分金 */
-  --color-success: #4CAF50;
-  --color-warning: #FF9800;
-  --color-error: #F44336;
-  --color-info: #1976D2; /* 年份蓝 */
-  --color-purple: #9C27B0;
+  --color-accent: #f43f5e; /* 评分玫红 */
+  --color-gold: #f59e0b; /* 高分金 */
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #0ea5e9;
+  --color-purple: #a855f7;
 
   /* 圆角 */
   --radius-sm: 6px;
