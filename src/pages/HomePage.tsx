@@ -1,19 +1,25 @@
-// 首页 - Selene 风格(分段切换 + 顶栏搜索 + 横向滚动)
-// 入口:Selene 风格 segmented 切换"首页 / 收藏夹"
-// 顶栏:🔍 搜索(跳转搜索页) + 主题/个人入口
-// 主体:继续观看 / 热门电影 / 热门剧集 / 热门综艺 / 热门动漫
-import { useEffect, useState, useCallback } from '@lynx-js/react';
-import { useConfig, getRecordsLocal, getFavoritesLocal } from '../store';
+// 首页 - LunaTV Web 同款
+// 问候渐变卡 + 3 段 CapsuleSwitch(首页/收藏夹/想看) + 横向滚动
+import { useEffect, useState, useCallback, useMemo } from '@lynx-js/react';
+import { useConfig, useAuth, getRecordsLocal, getFavoritesLocal } from '../store';
 import { doubanHot } from '../api/endpoints';
 import { navigate } from '../lib/router';
 import { VideoCard, HorizontalList } from '../components/VideoCard';
 import { LoadingView, ErrorView } from '../components/Common';
+import { CapsuleSwitch } from '../components/CapsuleSwitch';
 import type { SearchResult, DoubanItem, PlayRecord } from '../api/types';
 
-type HomeTab = 'home' | 'fav';
+type HomeTab = 'home' | 'fav' | 'wish';
+
+const TAB_OPTIONS = [
+  { label: '首页', value: 'home' },
+  { label: '收藏夹', value: 'fav' },
+  { label: '想看', value: 'wish' },
+];
 
 export function HomePage() {
   const [config] = useConfig();
+  const [auth] = useAuth();
   const [tab, setTab] = useState<HomeTab>('home');
 
   // 内容列表
@@ -26,6 +32,18 @@ export function HomePage() {
   const [error, setError] = useState('');
   const [records, setRecords] = useState<PlayRecord[]>([]);
   const [favorites, setFavorites] = useState(getFavoritesLocal());
+
+  // 问候语:按时间段
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) return '早上好';
+    if (hour < 18) return '下午好';
+    return '晚上好';
+  }, []);
+
+  const username = useMemo(() => {
+    return auth.user?.username || '';
+  }, [auth.user]);
 
   const load = useCallback(async () => {
     if (!config.apiBase) {
@@ -45,19 +63,38 @@ export function HomePage() {
         source: '',
         source_name,
       });
-      const safe = (p: Promise<any>) => p.catch(() => ({ list: [] as DoubanItem[] }));
+      // 并行请求,但失败时记录到 partialErr
+      const partialErr: string[] = [];
+      const safe = async (
+        label: string,
+        p: Promise<any>,
+      ): Promise<DoubanItem[]> => {
+        try {
+          const r = await p;
+          return r?.list || [];
+        } catch (e: any) {
+          partialErr.push(`${label}: ${e?.message || '失败'}`);
+          return [];
+        }
+      };
       const [m, t, v, a] = await Promise.all([
-        safe(doubanHot(config.apiBase, 'movie', '热门', 12)),
-        safe(doubanHot(config.apiBase, 'tv', '热门', 12)),
-        safe(doubanHot(config.apiBase, 'tv', '综艺', 12)),
-        safe(doubanHot(config.apiBase, 'tv', '动漫', 12)),
+        safe('电影', doubanHot(config.apiBase, 'movie', '热门', 12)),
+        safe('剧集', doubanHot(config.apiBase, 'tv', '热门', 12)),
+        safe('综艺', doubanHot(config.apiBase, 'tv', '综艺', 12)),
+        safe('动漫', doubanHot(config.apiBase, 'tv', '动漫', 12)),
       ]);
-      setHotMovie(m.list.map((x: DoubanItem) => toCard(x)));
-      setHotTv(t.list.map((x: DoubanItem) => toCard(x)));
-      setHotVariety(v.list.map((x: DoubanItem) => toCard(x)));
-      setHotAnime(a.list.map((x: DoubanItem) => toCard(x)));
+      setHotMovie(m.map((x) => toCard(x)));
+      setHotTv(t.map((x) => toCard(x)));
+      setHotVariety(v.map((x) => toCard(x)));
+      setHotAnime(a.map((x) => toCard(x)));
       setRecords(getRecordsLocal());
       setFavorites(getFavoritesLocal());
+      // 全部都失败时才算错误
+      if (m.length === 0 && t.length === 0 && v.length === 0 && a.length === 0) {
+        if (partialErr.length > 0) {
+          setError(partialErr[0] + (partialErr.length > 1 ? ` 等${partialErr.length}项` : ''));
+        }
+      }
     } catch (e: any) {
       setError(e?.message || '加载失败');
     } finally {
@@ -70,7 +107,7 @@ export function HomePage() {
   }, [load]);
 
   if (loading) return <LoadingView text="加载首页内容..." />;
-  if (error) {
+  if (error && tab === 'home') {
     return (
       <view>
         <ErrorView message={error} onRetry={load} />
@@ -199,9 +236,22 @@ export function HomePage() {
     );
   }
 
+  // 渲染"想看"tab 内容(暂作空状态,LunaTV 远端同步需登录)
+  function renderWish() {
+    return (
+      <view className="home-fav-empty">
+        <text className="home-fav-empty-icon">🔔</text>
+        <text className="home-fav-empty-title">想看清单为空</text>
+        <text className="home-fav-empty-sub">
+          标记"想看"的影片将出现在这里
+        </text>
+      </view>
+    );
+  }
+
   return (
     <scroll-view scroll-y className="page">
-      {/* 顶栏 - Selene 风格:左标题,右搜索+个人 */}
+      {/* 顶栏 */}
       <view className="app-header">
         <text className="app-title">LunaTV</text>
         <view className="app-header-actions">
@@ -220,47 +270,33 @@ export function HomePage() {
         </view>
       </view>
 
-      {/* 分段切换 首页 / 收藏夹 */}
-      <view className="segmented">
-        <view
-          className={
-            tab === 'home'
-              ? 'segmented-item segmented-item-active'
-              : 'segmented-item'
-          }
-          bindtap={() => setTab('home')}
-        >
-          <text
-            className={
-              tab === 'home'
-                ? 'segmented-item-text segmented-item-text-active'
-                : 'segmented-item-text'
-            }
-          >
-            首页
-          </text>
-        </view>
-        <view
-          className={
-            tab === 'fav'
-              ? 'segmented-item segmented-item-active'
-              : 'segmented-item'
-          }
-          bindtap={() => setTab('fav')}
-        >
-          <text
-            className={
-              tab === 'fav'
-                ? 'segmented-item-text segmented-item-text-active'
-                : 'segmented-item-text'
-            }
-          >
-            收藏夹
-          </text>
+      {/* 问候渐变卡 - LunaTV:from-blue-500/90 via-purple-500/90 to-pink-500/90 */}
+      <view className="greeting-card">
+        <view className="greeting-inner">
+          <view className="greeting-content">
+            <text className="greeting-text">
+              {greeting}
+              {username ? ',' : ''}
+              {username ? <text className="greeting-username">{username}</text> : null} 👋
+            </text>
+            <text className="greeting-sub">发现更多精彩影视内容 ✨</text>
+          </view>
+          <view className="greeting-icon">
+            <text className="greeting-icon-text">🎬</text>
+          </view>
         </view>
       </view>
 
-      {tab === 'home' ? renderHome() : renderFav()}
+      {/* 3 段 CapsuleSwitch */}
+      <view className="capsule-wrap">
+        <CapsuleSwitch
+          options={TAB_OPTIONS}
+          active={tab}
+          onChange={(v) => setTab(v as HomeTab)}
+        />
+      </view>
+
+      {tab === 'home' ? renderHome() : tab === 'fav' ? renderFav() : renderWish()}
     </scroll-view>
   );
 }
