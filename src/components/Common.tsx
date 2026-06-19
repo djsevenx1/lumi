@@ -1,11 +1,11 @@
 // 通用占位组件:Loading / Error / Empty
-// 配色对齐 LunaTV 绿色系
+// 配色对齐 Selene 浅色风格
 
 export function LoadingView({ text = '加载中...' }: { text?: string }) {
   return (
     <view className="loading-page">
       <view className="loading-spinner" />
-      <text style={{ color: '#6b7280', fontSize: 13 }}>{text}</text>
+      <text className="loading-text">{text}</text>
     </view>
   );
 }
@@ -38,23 +38,9 @@ export function ErrorView({
       {onRetry ? (
         <view
           bindtap={onRetry}
-          style={{
-            marginTop: 12,
-            paddingTop: 8,
-            paddingBottom: 8,
-            paddingLeft: 16,
-            paddingRight: 16,
-            alignSelf: 'flex-start',
-            borderRadius: 999,
-            backgroundColor: 'rgba(16, 185, 129, 0.15)',
-            borderWidth: 1,
-            borderStyle: 'solid',
-            borderColor: 'rgba(16, 185, 129, 0.3)',
-          }}
+          className="error-retry"
         >
-          <text style={{ color: '#10b981', fontSize: 13, fontWeight: '600' }}>
-            重试
-          </text>
+          <text className="error-retry-text">重试</text>
         </view>
       ) : null}
     </view>
@@ -73,15 +59,10 @@ export function PosterPlaceholder({
 }) {
   return (
     <view
-      style={{
-        width,
-        height,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#141414',
-      }}
+      className="poster-placeholder"
+      style={{ width, height }}
     >
-      <text style={{ color: '#4b5563', fontSize: 24 }}>{text || '🎬'}</text>
+      <text className="poster-placeholder-text">{text || '🎬'}</text>
     </view>
   );
 }

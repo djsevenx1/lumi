@@ -1,17 +1,15 @@
-/* 全局样式 — LunaTV/Selene 风格
-   对齐 Selene 官方客户端(浅色 + 翠绿 + 圆角卡片):
-   - 浅色背景 #F5F6F8 + 白色卡片
-   - 主操作色:翠绿 #10B981(激活/进度)
+/* 全局样式 — Selene 浅色风格(对齐 LunaTV 移动端客户端)
+   配色 / 圆角 / 阴影 / 排版 / 组件都按 Selene 实际观感重做
+   - 浅色背景 #F5F6F8 + 白色卡片 + 玻璃态顶栏
+   - 主色:翠绿 #10B981
    - 评分强调:玫红 #EC4899 / 金 #FBBF24
-   - 玻璃态顶栏(backdrop-blur)
-   - 圆角 8-12px
-   - 极浅阴影,靠背景对比区分层级
-   - 大圆角胶囊按钮
-   - iOS 风格 TabBar(5 项)
+   - 圆角 8-14px 为主,胶囊 999
+   - 极浅阴影 + 大白卡 + iOS segmented control
+   - 暗色文字 #111827,灰色 #6B7280
 */
 
 :root {
-  /* 背景 - Selene 浅色 */
+  /* 背景 */
   --color-bg: #F5F6F8;
   --color-bg-elev: #FFFFFF;
   --color-bg-elev2: #FFFFFF;
@@ -20,30 +18,29 @@
   --color-surface-hover: rgba(0, 0, 0, 0.08);
   --color-border: rgba(0, 0, 0, 0.06);
   --color-border-strong: rgba(0, 0, 0, 0.12);
+  --color-glass: rgba(255, 255, 255, 0.85);
 
-  /* 文字 - Selene 深色文字 */
-  --color-text: #111827; /* gray-900 */
-  --color-text-sub: #4B5563; /* gray-600 */
-  --color-text-mute: #9CA3AF; /* gray-400 */
-  --color-text-faint: #D1D5DB; /* gray-300 */
+  /* 文字 */
+  --color-text: #111827;
+  --color-text-sub: #4B5563;
+  --color-text-mute: #9CA3AF;
+  --color-text-faint: #D1D5DB;
 
-  /* 主色 - Selene 翠绿(emerald) */
-  --color-primary: #10B981; /* emerald-500 */
-  --color-primary-dark: #059669; /* emerald-600 */
-  --color-primary-light: #34D399; /* emerald-400 */
+  /* 主色 - Selene 翠绿 */
+  --color-primary: #10B981;
+  --color-primary-dark: #059669;
+  --color-primary-light: #34D399;
   --color-primary-soft: rgba(16, 185, 129, 0.12);
   --color-primary-glow: rgba(16, 185, 129, 0.3);
 
-  /* 强调色 - 玫红/金 */
-  --color-accent: #EC4899; /* pink-500 评分徽章 */
-  --color-accent-2: #F472B6; /* pink-400 */
-  --color-gold: #FBBF24; /* yellow-400 高分 */
-  --color-success: #22C55E; /* green-500 进度/状态 */
-  --color-warning: #F59E0B; /* orange-500 即将上映 */
-  --color-error: #EF4444; /* red-500 */
-  --color-info: #3B82F6; /* blue-500 */
-  --color-purple: #A855F7; /* 动漫 */
-  --color-pink: #EC4899; /* 综艺 */
+  /* 强调色 */
+  --color-accent: #EC4899; /* 评分玫红 */
+  --color-gold: #FBBF24; /* 高分金 */
+  --color-success: #22C55E;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+  --color-info: #3B82F6;
+  --color-purple: #A855F7;
 
   /* 圆角 */
   --radius-sm: 6px;
@@ -68,7 +65,7 @@
   --header-h: 52px;
   --tabbar-h: 64px;
 
-  /* 阴影 - Selene 极浅 */
+  /* 阴影 */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
   --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08);
@@ -112,15 +109,17 @@ body, page {
   padding-bottom: 0;
 }
 
-/* ====== 顶栏 - Selene 风格 ====== */
+/* ====== 顶栏 - 玻璃态浅色 ====== */
 .app-header {
   height: var(--header-h);
   padding: 0 var(--space-4);
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  background-color: rgba(255, 255, 255, 0.85);
-  border-bottom-width: 0;
+  background-color: var(--color-glass);
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-color: var(--color-border);
 }
 
 .app-title {
@@ -145,11 +144,12 @@ body, page {
 }
 
 .icon-btn-text {
-  font-size: 18px;
+  font-size: 20px;
   color: var(--color-text);
+  font-weight: 600;
 }
 
-/* ====== 底部 Tab Bar - iOS 5 项风格 ====== */
+/* ====== 底部 Tab Bar ====== */
 .tab-bar {
   position: fixed;
   left: 0;
@@ -158,7 +158,7 @@ body, page {
   height: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px));
   padding-bottom: env(safe-area-inset-bottom, 0px);
   flex-direction: row;
-  background-color: rgba(255, 255, 255, 0.92);
+  background-color: var(--color-glass);
   border-top-width: 1px;
   border-top-style: solid;
   border-top-color: var(--color-border);
@@ -170,7 +170,6 @@ body, page {
   justify-content: center;
   padding-top: 8px;
   padding-bottom: 4px;
-  gap: 4px;
 }
 
 .tab-icon {
@@ -187,6 +186,7 @@ body, page {
   font-size: 10px;
   color: var(--color-text-mute);
   font-weight: 500;
+  margin-top: 2px;
 }
 
 .tab-label-active {
@@ -194,14 +194,21 @@ body, page {
   font-weight: 700;
 }
 
-/* ====== Segmented Control - Selene 首页切换 ====== */
+/* ====== Segmented Control - 选中胶囊 ====== */
 .segmented {
-  margin: 0 var(--space-4) var(--space-4);
+  margin: var(--space-3) var(--space-4);
   padding: 4px;
   border-radius: var(--radius-pill);
   background-color: var(--color-surface);
   flex-direction: row;
   align-items: center;
+}
+
+.segmented-nomargin {
+  margin-left: 0;
+  margin-right: 0;
+  margin-top: 12px;
+  margin-bottom: 0;
 }
 
 .segmented-item {
@@ -228,7 +235,7 @@ body, page {
   font-weight: 700;
 }
 
-/* ====== 视频卡片 - Selene 风格 ====== */
+/* ====== 视频卡片 ====== */
 .video-card {
   width: 108px;
   flex-direction: column;
@@ -266,13 +273,6 @@ body, page {
   line-height: 16px;
 }
 
-.video-meta {
-  font-size: 10px;
-  color: var(--color-text-mute);
-  line-height: 14px;
-}
-
-/* 评分徽章 - Selene 玫红圆形 */
 .video-card-rating {
   position: absolute;
   top: 4px;
@@ -304,7 +304,6 @@ body, page {
   color: #fff;
 }
 
-/* 集数角标 - Selene 绿色矩形 */
 .video-card-remarks {
   position: absolute;
   top: 4px;
@@ -322,7 +321,6 @@ body, page {
   background-color: rgba(0, 0, 0, 0.6);
 }
 
-/* 进度条 */
 .video-card-progress {
   position: absolute;
   bottom: 0;
@@ -330,7 +328,6 @@ body, page {
   right: 0;
   height: 3px;
   background-color: rgba(0, 0, 0, 0.2);
-  overflow: hidden;
 }
 
 .video-card-progress-bar {
@@ -338,7 +335,6 @@ body, page {
   background-color: var(--color-primary);
 }
 
-/* 卡片底部的来源标签 - Selene "豆瓣资源" */
 .video-card-source {
   flex-direction: row;
   align-items: center;
@@ -372,20 +368,10 @@ body, page {
   letter-spacing: -0.2px;
 }
 
-.section-title-icon {
-  margin-right: 6px;
-}
-
 .section-action {
   font-size: var(--font-sm);
   color: var(--color-text-mute);
   font-weight: 500;
-}
-
-/* 横向滚动 */
-.horizontal-scroll {
-  flex-direction: row;
-  gap: var(--space-3);
 }
 
 .horizontal-scroll-wide {
@@ -394,7 +380,7 @@ body, page {
   padding-right: var(--space-4);
 }
 
-/* ====== Banner - Selene 不强调 hero 风格 ====== */
+/* ====== Banner ====== */
 .banner {
   width: 100%;
   height: 200px;
@@ -447,7 +433,7 @@ body, page {
   width: 20px;
 }
 
-/* ====== 搜索 - Selene 风格 ====== */
+/* ====== 搜索 ====== */
 .search-bar {
   margin: var(--space-3) var(--space-4);
   height: 44px;
@@ -471,7 +457,6 @@ body, page {
   color: var(--color-text-mute);
 }
 
-/* 搜索结果 - Selene 列表式卡片 */
 .search-result-card {
   flex-direction: row;
   padding: var(--space-3);
@@ -502,12 +487,6 @@ body, page {
   font-weight: 600;
 }
 
-.search-result-meta {
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
 .search-result-tag {
   padding: 2px 8px;
   border-radius: var(--radius-pill);
@@ -522,7 +501,6 @@ body, page {
   color: var(--color-text-sub);
 }
 
-/* 搜索源标签 */
 .search-source-tag {
   padding: 2px 8px;
   border-radius: var(--radius-pill);
@@ -531,7 +509,6 @@ body, page {
   color: var(--color-text-sub);
 }
 
-/* 搜索历史 */
 .search-history {
   padding: 0 var(--space-4);
 }
@@ -546,7 +523,7 @@ body, page {
   justify-content: space-between;
 }
 
-/* ====== 详情页 - Selene 风格 ====== */
+/* ====== 详情页 ====== */
 .detail-hero {
   width: 100%;
   height: 280px;
@@ -575,6 +552,12 @@ body, page {
   background-color: rgba(0, 0, 0, 0.4);
   align-items: center;
   justify-content: center;
+}
+
+.detail-back-btn text {
+  color: #FFFFFF;
+  font-size: 22px;
+  font-weight: 600;
 }
 
 .detail-info {
@@ -621,7 +604,6 @@ body, page {
   gap: var(--space-3);
 }
 
-/* 播放按钮 - Selene 翠绿主按钮 */
 .detail-btn-primary {
   flex: 1;
   height: 44px;
@@ -634,7 +616,12 @@ body, page {
   justify-content: center;
 }
 
-/* 收藏按钮 - 玻璃态 */
+.detail-btn-primary text {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+}
+
 .detail-btn-secondary {
   width: 44px;
   height: 44px;
@@ -646,6 +633,16 @@ body, page {
 
 .detail-btn-active {
   background-color: var(--color-primary-soft);
+}
+
+.detail-btn-active text {
+  color: var(--color-primary-dark);
+  font-size: 15px;
+}
+
+.detail-btn-secondary text {
+  color: var(--color-text);
+  font-size: 15px;
 }
 
 .detail-overview {
@@ -666,7 +663,6 @@ body, page {
   line-height: 20px;
 }
 
-/* 集数网格 */
 .episode-list {
   flex-direction: row;
   flex-wrap: wrap;
@@ -688,6 +684,11 @@ body, page {
   border-color: var(--color-border);
 }
 
+.episode-chip text {
+  color: var(--color-text);
+  font-size: 13px;
+}
+
 .episode-chip-active {
   background-color: var(--color-primary);
   border-color: var(--color-primary);
@@ -695,6 +696,7 @@ body, page {
 
 .episode-chip-active text {
   color: #fff;
+  font-weight: 700;
 }
 
 /* ====== 播放器 ====== */
@@ -705,11 +707,6 @@ body, page {
   top: 0;
   bottom: 0;
   background-color: #000;
-}
-
-.player-page.center {
-  align-items: center;
-  justify-content: center;
 }
 
 .player-controls {
@@ -772,4 +769,716 @@ body, page {
   justify-content: space-between;
   font-size: var(--font-xs);
   color: rgba(255, 255, 255, 0.7);
+}
+
+/* ====== Loading / Error / Empty - 浅色 ====== */
+.loading-page {
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 80px var(--space-4);
+  gap: var(--space-3);
+}
+
+.loading-spinner {
+  width: 28px;
+  height: 28px;
+  border-radius: 14px;
+  border-width: 3px;
+  border-style: solid;
+  border-color: var(--color-primary-soft);
+  border-top-color: var(--color-primary);
+  /* Lynx 无 rotate 动画,这里用占位静态圈 */
+}
+
+.empty {
+  align-items: center;
+  justify-content: center;
+  padding: 60px var(--space-4);
+  gap: var(--space-2);
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 8px;
+}
+
+.empty-text {
+  font-size: var(--font-sm);
+  color: var(--color-text-sub);
+}
+
+.error-box {
+  margin: var(--space-5) var(--space-4);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background-color: rgba(239, 68, 68, 0.08);
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgba(239, 68, 68, 0.2);
+  align-items: center;
+}
+
+.error-text {
+  font-size: var(--font-sm);
+  color: var(--color-error);
+  text-align: center;
+  line-height: 20px;
+}
+
+/* ====== Form / Input / Button - 浅色 ====== */
+.form-container {
+  padding: var(--space-6) var(--space-5);
+  gap: var(--space-3);
+}
+
+.form-container.col {
+  flex-direction: column;
+}
+
+.form-title {
+  font-size: var(--font-2xl);
+  font-weight: 800;
+  color: var(--color-text);
+  letter-spacing: -0.4px;
+}
+
+.form-sub {
+  font-size: var(--font-sm);
+  color: var(--color-text-sub);
+  margin-bottom: var(--space-2);
+  line-height: 20px;
+}
+
+.input {
+  width: 100%;
+  height: 48px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  font-size: var(--font-md);
+  color: var(--color-text);
+  margin-top: 6px;
+}
+
+.input-placeholder {
+  color: var(--color-text-mute);
+}
+
+.btn {
+  height: 48px;
+  padding: 0 var(--space-5);
+  border-radius: var(--radius-pill);
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+}
+
+.btn-primary text {
+  color: #fff;
+  font-size: var(--font-md);
+  font-weight: 700;
+}
+
+.btn-secondary {
+  background-color: var(--color-surface);
+}
+
+.btn-secondary text {
+  color: var(--color-text);
+  font-size: var(--font-md);
+  font-weight: 600;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.text-error {
+  color: var(--color-error);
+}
+
+/* ====== Settings - 浅色分组卡 ====== */
+.settings-section {
+  margin: var(--space-3) var(--space-4) var(--space-4);
+  padding: var(--space-4);
+  background-color: var(--color-bg-elev);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  gap: var(--space-2);
+  flex-direction: column;
+}
+
+.settings-section > text:first-child {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-mute);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.settings-item {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-color: var(--color-border);
+  min-height: 44px;
+}
+
+.settings-item:last-child {
+  border-bottom-width: 0;
+}
+
+.settings-item-label {
+  font-size: var(--font-md);
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.settings-item-value {
+  font-size: var(--font-sm);
+  color: var(--color-text-sub);
+  max-width: 60%;
+  text-align: right;
+}
+
+.settings-item-arrow {
+  font-size: 18px;
+  color: var(--color-text-mute);
+  font-weight: 300;
+}
+
+/* ====== List Item (MyPage) - 浅色 ====== */
+.list-item {
+  flex-direction: row;
+  align-items: center;
+  padding: var(--space-3);
+  margin: 0 var(--space-4) var(--space-2);
+  background-color: var(--color-bg-elev);
+  border-radius: var(--radius-lg);
+  gap: var(--space-3);
+  box-shadow: var(--shadow-sm);
+}
+
+.list-poster {
+  width: 60px;
+  height: 90px;
+  border-radius: var(--radius-sm);
+  background-color: #E5E7EB;
+  overflow: hidden;
+}
+
+.list-content {
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.list-title {
+  font-size: var(--font-md);
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.list-sub {
+  font-size: var(--font-xs);
+  color: var(--color-text-mute);
+}
+
+.list-action {
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-primary-soft);
+}
+
+.list-action text {
+  color: var(--color-primary-dark);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ====== 头像 ====== */
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 24px;
+  background-color: var(--color-primary);
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-text {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* ====== 账号卡 (MyPage) ====== */
+.account-card {
+  margin: var(--space-3) var(--space-4);
+  padding: 20px;
+  border-radius: 16px;
+  background-color: var(--color-bg-elev);
+  flex-direction: row;
+  align-items: center;
+  gap: 14px;
+  box-shadow: var(--shadow-sm);
+}
+
+.account-info {
+  flex: 1;
+  flex-direction: column;
+}
+
+.account-name {
+  color: var(--color-text);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.account-sub {
+  color: var(--color-text-sub);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.btn-small {
+  height: 36px;
+  padding: 0 16px;
+}
+
+.btn-primary-text {
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.btn-secondary-text {
+  color: var(--color-text);
+  font-size: var(--font-md);
+  font-weight: 600;
+}
+
+.list-poster-image {
+  width: 100%;
+  height: 100%;
+}
+
+.list-action-text {
+  color: var(--color-primary-dark);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ====== Header actions ====== */
+.app-header-actions {
+  flex-direction: row;
+  gap: 8px;
+}
+
+/* ====== Detail page additions ====== */
+.detail-hero-image {
+  width: 100%;
+  height: 100%;
+}
+
+.detail-back-btn-text {
+  color: #FFFFFF;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.detail-poster-image {
+  width: 100%;
+  height: 100%;
+}
+
+.detail-btn-primary-text {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.detail-btn-secondary-text {
+  color: var(--color-text);
+  font-size: 15px;
+}
+
+.detail-btn-active .detail-btn-secondary-text {
+  color: var(--color-primary-dark);
+  font-size: 15px;
+}
+
+.detail-episodes {
+  margin-top: 16px;
+}
+
+.detail-episodes-header {
+  padding: 0 var(--space-4);
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-3);
+}
+
+.detail-episodes-sub {
+  color: var(--color-text-mute);
+  font-size: 12px;
+}
+
+.detail-play-bar {
+  padding: var(--space-4);
+  padding-top: var(--space-3);
+}
+
+.episode-chip-text {
+  color: var(--color-text);
+  font-size: 13px;
+}
+
+.episode-chip-text-active {
+  color: #fff;
+  font-weight: 700;
+}
+
+.episode-chip-active .episode-chip-text {
+  color: #fff;
+  font-weight: 700;
+}
+
+/* ====== Player additions ====== */
+.player-page {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background-color: #000;
+}
+
+.player-btn-text {
+  color: #FFFFFF;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.player-btn-large {
+  width: 56px;
+  height: 56px;
+  border-radius: 28px;
+}
+
+.player-btn-text-large {
+  color: #FFFFFF;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.player-time-text {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: var(--font-xs);
+}
+
+.player-center {
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  margin-top: 8px;
+}
+
+/* ====== Search additions ====== */
+.search-bar-icon {
+  font-size: 18px;
+  color: var(--color-text-mute);
+}
+
+.search-clear-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 14px;
+  background-color: var(--color-surface);
+  align-items: center;
+  justify-content: center;
+}
+
+.search-clear-text {
+  color: var(--color-text-mute);
+  font-size: 14px;
+}
+
+.search-history-header {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--space-2);
+  padding-bottom: var(--space-2);
+}
+
+.search-history-title {
+  color: var(--color-text);
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.search-history-clear {
+  color: var(--color-text-sub);
+  font-size: 12px;
+}
+
+.search-history-row {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.search-history-icon {
+  color: var(--color-text-sub);
+  font-size: 14px;
+}
+
+.search-history-text {
+  color: var(--color-text);
+  font-size: 14px;
+}
+
+.search-history-arrow {
+  color: var(--color-text-mute);
+  font-size: 18px;
+  padding: 4px;
+}
+
+.search-result-count {
+  padding: 0 var(--space-4);
+  margin-bottom: var(--space-2);
+}
+
+.search-result-count-text {
+  color: var(--color-text-sub);
+  font-size: 12px;
+}
+
+.search-result-poster-image {
+  width: 100%;
+  height: 100%;
+}
+
+.search-result-meta {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.search-result-source {
+  flex-direction: row;
+  margin-top: 4px;
+}
+
+.search-play-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  background-color: var(--color-primary);
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+}
+
+.search-play-btn-text {
+  color: #fff;
+  font-size: 16px;
+}
+
+/* ====== Category additions ====== */
+.category-scroll {
+  flex: 1;
+}
+
+.category-grid {
+  flex-direction: row;
+  flex-wrap: wrap;
+  padding: 12px;
+  gap: 12px;
+}
+
+.category-cell {
+  /* VideoCard 宽度由内部样式控制 */
+}
+
+/* ====== Home fav grid ====== */
+.home-fav-empty {
+  padding: 32px;
+  align-items: center;
+}
+
+.home-fav-empty-icon {
+  font-size: 40px;
+  margin-bottom: 12px;
+}
+
+.home-fav-empty-title {
+  font-size: 16px;
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.home-fav-empty-sub {
+  font-size: 13px;
+  color: var(--color-text-sub);
+  margin-top: 6px;
+  text-align: center;
+}
+
+.home-fav-grid {
+  flex-direction: row;
+  flex-wrap: wrap;
+  padding: 0 var(--space-4);
+  gap: var(--space-3);
+}
+
+.home-fav-cell {
+  margin-bottom: 12px;
+}
+
+/* ====== Login page additions ====== */
+.form-link-row {
+  margin-top: 24px;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.form-link-text {
+  color: var(--color-text-sub);
+  font-size: 13px;
+}
+
+.form-link-action {
+  color: var(--color-primary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.form-endpoint-row {
+  margin-top: 16px;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+}
+
+.form-endpoint-label {
+  color: var(--color-text-mute);
+  font-size: 11px;
+}
+
+.form-endpoint-value {
+  color: var(--color-text-sub);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.form-endpoint-edit {
+  color: var(--color-primary);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* ====== Settings additions ====== */
+.settings-hint {
+  color: var(--color-text-sub);
+  font-size: 12px;
+  line-height: 18px;
+  margin-bottom: 4px;
+}
+
+.settings-item-danger {
+  color: var(--color-error);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.settings-item-action {
+  color: var(--color-error);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.settings-disclaimer {
+  padding: 24px;
+  align-items: center;
+}
+
+.settings-disclaimer-text {
+  color: var(--color-text-mute);
+  font-size: 11px;
+  text-align: center;
+  line-height: 16px;
+}
+
+.settings-spacer {
+  width: 36px;
+}
+
+.settings-item-row {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+
+.settings-item-value-online {
+  color: var(--color-primary);
+}
+
+.settings-item-value-offline {
+  color: var(--color-text-mute);
+}
+
+/* ====== Empty state additions ====== */
+.empty-title {
+  font-size: 15px;
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.loading-text {
+  color: var(--color-text-sub);
+  font-size: 13px;
+}
+
+.error-retry {
+  margin-top: 12px;
+  padding: 8px 16px;
+  align-self: center;
+  border-radius: 999px;
+  background-color: var(--color-primary-soft);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--color-primary-glow);
+}
+
+.error-retry-text {
+  color: var(--color-primary-dark);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.poster-placeholder {
+  align-items: center;
+  justify-content: center;
+  background-color: #E5E7EB;
+}
+
+.poster-placeholder-text {
+  color: #6B7280;
+  font-size: 24px;
 }

@@ -161,7 +161,7 @@ export function PlayerPage({ source, id, episode, title, poster }: Props) {
           bindtap={() => back()}
           style={{ marginTop: 16 }}
         >
-          <text style={{ color: '#FFFFFF' }}>返回</text>
+          <text className="btn-secondary-text">返回</text>
         </view>
       </view>
     );
@@ -186,7 +186,7 @@ export function PlayerPage({ source, id, episode, title, poster }: Props) {
         <>
           <view className="player-top">
             <view className="player-btn" bindtap={() => back()}>
-              <text style={{ color: '#FFFFFF', fontSize: 18 }}>‹</text>
+              <text className="player-btn-text">‹</text>
             </view>
             <text className="player-title" text-maxline="1">
               {title || '播放中'}
@@ -202,23 +202,15 @@ export function PlayerPage({ source, id, episode, title, poster }: Props) {
               />
             </view>
             <view className="player-time">
-              <text>{fmtTime(current)}</text>
-              <text>{fmtTime(duration)}</text>
+              <text className="player-time-text">{fmtTime(current)}</text>
+              <text className="player-time-text">{fmtTime(duration)}</text>
             </view>
-            <view
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'center',
-                alignItems: 'center',
-                marginTop: 8,
-              }}
-            >
+            <view className="player-center">
               <view
-                className="player-btn"
-                style={{ width: 56, height: 56, borderRadius: 28 }}
+                className="player-btn player-btn-large"
                 bindtap={() => setPaused((p) => !p)}
               >
-                <text style={{ color: '#FFFFFF', fontSize: 24 }}>
+                <text className="player-btn-text-large">
                   {paused ? '▶' : '⏸'}
                 </text>
               </view>

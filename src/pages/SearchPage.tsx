@@ -1,4 +1,4 @@
-// 搜索页 - 对齐 LunaTV search/page.tsx
+// 搜索页 - Selene 浅色风格
 // 列表式搜索结果卡片 + 搜索历史
 import { useEffect, useState, useCallback, useRef } from '@lynx-js/react';
 import { useConfig, useSearchHistory, pushSearchHistory, clearSearchHistory, getAuth } from '../store';
@@ -100,20 +100,10 @@ export function SearchPage() {
         <view>
           {history.length > 0 ? (
             <view className="search-history">
-              <view
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  paddingTop: 8,
-                  paddingBottom: 8,
-                }}
-              >
-                <text style={{ color: '#FFFFFF', fontWeight: '600', fontSize: 15 }}>
-                  搜索历史
-                </text>
+              <view className="search-history-header">
+                <text className="search-history-title">搜索历史</text>
                 <text
-                  style={{ color: '#6b7280', fontSize: 12 }}
+                  className="search-history-clear"
                   bindtap={onClearHistory}
                 >
                   🗑 清空
@@ -125,22 +115,11 @@ export function SearchPage() {
                   className="search-history-item"
                   bindtap={() => onPickHistory(q)}
                 >
-                  <view
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      gap: 8,
-                      flex: 1,
-                    }}
-                  >
-                    <text style={{ color: '#6b7280', fontSize: 14 }}>🕐</text>
-                    <text style={{ color: '#FFFFFF', fontSize: 14 }}>{q}</text>
+                  <view className="search-history-row">
+                    <text className="search-history-icon">🕐</text>
+                    <text className="search-history-text">{q}</text>
                   </view>
-                  <text
-                    style={{ color: '#6b7280', fontSize: 18, padding: 4 }}
-                  >
-                    ›
-                  </text>
+                  <text className="search-history-arrow">›</text>
                 </view>
               ))}
             </view>
@@ -154,10 +133,10 @@ export function SearchPage() {
           text={searched ? `没有找到关于"${keyword}"的结果` : '输入关键词开始搜索'}
         />
       ) : (
-        // LunaTV 列表式搜索结果
+        // 列表式搜索结果
         <view>
-          <view style={{ paddingLeft: 16, paddingRight: 16, marginBottom: 8 }}>
-            <text style={{ color: '#6b7280', fontSize: 12 }}>
+          <view className="search-result-count">
+            <text className="search-result-count-text">
               共找到 {results.length} 个结果
             </text>
           </view>
@@ -174,7 +153,7 @@ export function SearchPage() {
                 {r.poster ? (
                   <image
                     src={imageProxyUrl(config.apiBase, r.poster)}
-                    style={{ width: '100%', height: '100%' }}
+                    className="search-result-poster-image"
                     mode="aspectFill"
                   />
                 ) : null}
@@ -206,14 +185,9 @@ export function SearchPage() {
                     {r.desc}
                   </text>
                 ) : null}
-                {/* 播放源标签 - LunaTV 风格 */}
+                {/* 播放源标签 */}
                 {r.source_name ? (
-                  <view
-                    style={{
-                      flexDirection: 'row',
-                      marginTop: 4,
-                    }}
-                  >
+                  <view className="search-result-source">
                     <view className="search-source-tag">
                       <text>{r.source_name}</text>
                     </view>
@@ -221,18 +195,8 @@ export function SearchPage() {
                 ) : null}
               </view>
               {/* 播放按钮 */}
-              <view
-                style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 18,
-                  backgroundColor: '#10b981',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  alignSelf: 'center',
-                }}
-              >
-                <text style={{ color: '#fff', fontSize: 16 }}>▶</text>
+              <view className="search-play-btn">
+                <text className="search-play-btn-text">▶</text>
               </view>
             </view>
           ))}

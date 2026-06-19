@@ -1,286 +1,224 @@
-// 我的 - 收藏/历史/账号
-// 配色对齐 LunaTV 绿色系 + 玻璃态卡片
+// 我的 - Selene 风格(账号卡 + 4 个 tab: 收藏/历史/已看/设置)
 import { useEffect, useState } from '@lynx-js/react';
-import {
-  useAuth,
-  clearAuth,
-  useFavorites,
-  usePlayRecords,
-  setFavoritesFromMap,
-  setRecordsFromMap,
-  useConfig,
-} from '../store';
-import { getFavorites, getPlayRecords } from '../api/endpoints';
-import { imageProxyUrl } from '../api/endpoints-helper';
+import { useConfig, useAuth, getFavoritesLocal, getRecordsLocal } from '../store';
 import { navigate } from '../lib/router';
-import { EmptyView } from '../components/Common';
+import { imageProxyUrl } from '../api/endpoints-helper';
+import type { PlayRecord, Favorite } from '../api/types';
 
-type Tab = 'fav' | 'history';
+type MyTab = 'records' | 'favorites' | 'settings';
 
 export function MyPage() {
-  const [auth] = useAuth();
   const [config] = useConfig();
-  const [favs] = useFavorites();
-  const [records] = usePlayRecords();
-  const [tab, setTab] = useState<Tab>('history');
-  const [syncing, setSyncing] = useState(false);
-  const [syncError, setSyncError] = useState('');
-
-  async function sync() {
-    if (!config.apiBase || !auth.cookie) {
-      navigate({ name: 'login' });
-      return;
-    }
-    setSyncing(true);
-    setSyncError('');
-    try {
-      const [f, r] = await Promise.all([
-        getFavorites(config.apiBase).catch(() => ({})),
-        getPlayRecords(config.apiBase).catch(() => ({})),
-      ]);
-      setFavoritesFromMap(f || {});
-      setRecordsFromMap(r || {});
-    } catch (e: any) {
-      setSyncError(e?.message || '同步失败');
-    } finally {
-      setSyncing(false);
-    }
-  }
+  const [auth] = useAuth();
+  const [tab, setTab] = useState<MyTab>('records');
+  const [records, setRecords] = useState<PlayRecord[]>([]);
+  const [favorites, setFavorites] = useState<Favorite[]>([]);
 
   useEffect(() => {
-    if (auth.cookie) sync();
-  }, [auth.cookie]);
+    setRecords(getRecordsLocal());
+    setFavorites(getFavoritesLocal());
+  }, [auth.cookie, tab]);
+
+  const username = auth.user?.username || '未登录';
+  const initial = username.slice(0, 1).toUpperCase();
 
   return (
-    <view className="page">
+    <scroll-view scroll-y className="page">
+      {/* 顶栏 */}
       <view className="app-header">
-        <text className="app-title">我的</text>
-        {auth.cookie ? (
-          <view bindtap={() => clearAuth()}>
-            <text style={{ color: '#6b7280', fontSize: 13 }}>退出登录</text>
-          </view>
-        ) : null}
+        <text className="app-title">{config.siteName || 'LunaTV'}</text>
+        <view
+          className="icon-btn"
+          bindtap={() => navigate({ name: 'settings' })}
+        >
+          <text className="icon-btn-text">⚙</text>
+        </view>
       </view>
 
-      {/* 账号卡片 - 玻璃态 */}
-      <view
-        style={{
-          margin: 16,
-          padding: 16,
-          borderRadius: 14,
-          backgroundColor: '#0a0a0a',
-          borderWidth: 1,
-          borderStyle: 'solid',
-          borderColor: 'rgba(255,255,255,0.08)',
-        }}
-      >
-        <view style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          <view className="avatar">
-            <text className="avatar-text">
-              {auth.user?.username?.[0]?.toUpperCase() || 'U'}
-            </text>
+      {/* 账号卡 */}
+      <view className="account-card">
+        <view className="avatar">
+          <text className="avatar-text">{initial}</text>
+        </view>
+        <view className="account-info">
+          <text className="account-name">
+            {auth.cookie ? username : '游客'}
+          </text>
+          <text className="account-sub">
+            {auth.cookie ? '已登录,可同步云端' : '点击下方按钮登录账号'}
+          </text>
+        </view>
+        {auth.cookie ? null : (
+          <view
+            className="btn btn-primary btn-small"
+            bindtap={() => navigate({ name: 'login' })}
+          >
+            <text className="btn-primary-text">登录</text>
           </view>
-          <view style={{ flex: 1 }}>
-            {auth.user ? (
-              <>
-                <text
-                  style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '600' }}
-                >
-                  {auth.user.username}
-                </text>
-                <text
-                  style={{ color: '#6b7280', fontSize: 12, marginTop: 2 }}
-                >
-                  {auth.user.role === 'owner'
-                    ? '站长'
-                    : auth.user.role === 'admin'
-                      ? '管理员'
-                      : '用户'}
-                </text>
-              </>
-            ) : (
-              <>
-                <text
-                  style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '600' }}
-                >
-                  未登录
-                </text>
-                <text
-                  style={{ color: '#6b7280', fontSize: 12, marginTop: 2 }}
-                >
-                  登录后可同步数据
-                </text>
-              </>
-            )}
-          </view>
-          {auth.cookie ? (
-            <view
-              bindtap={sync}
-              style={{
-                padding: 8,
-                borderRadius: 999,
-                backgroundColor: 'rgba(16, 185, 129, 0.15)',
-                borderWidth: 1,
-                borderStyle: 'solid',
-                borderColor: 'rgba(16, 185, 129, 0.3)',
-              }}
-            >
-              <text style={{ color: '#10b981', fontSize: 12, fontWeight: '600' }}>
-                {syncing ? '同步中...' : '🔄 同步'}
-              </text>
+        )}
+      </view>
+
+      {/* segmented: 收藏 / 播放历史 */}
+      <view className="segmented">
+        <view
+          className={
+            tab === 'records'
+              ? 'segmented-item segmented-item-active'
+              : 'segmented-item'
+          }
+          bindtap={() => setTab('records')}
+        >
+          <text
+            className={
+              tab === 'records'
+                ? 'segmented-item-text segmented-item-text-active'
+                : 'segmented-item-text'
+            }
+          >
+            🕐 播放历史
+          </text>
+        </view>
+        <view
+          className={
+            tab === 'favorites'
+              ? 'segmented-item segmented-item-active'
+              : 'segmented-item'
+          }
+          bindtap={() => setTab('favorites')}
+        >
+          <text
+            className={
+              tab === 'favorites'
+                ? 'segmented-item-text segmented-item-text-active'
+                : 'segmented-item-text'
+            }
+          >
+            ❤️ 收藏夹
+          </text>
+        </view>
+      </view>
+
+      {/* 播放历史列表 */}
+      {tab === 'records' ? (
+        <view>
+          {records.length === 0 ? (
+            <view className="empty">
+              <text className="empty-icon">🎬</text>
+              <text className="empty-title">还没有播放记录</text>
+              <text className="empty-text">去首页选个视频开始看吧</text>
             </view>
           ) : (
-            <view
-              bindtap={() => navigate({ name: 'login' })}
-              className="btn btn-primary"
-              style={{ height: 32, paddingLeft: 16, paddingRight: 16 }}
-            >
-              <text style={{ color: '#FFFFFF', fontSize: 13 }}>登录</text>
+            <view>
+              {records.map((r, i) => {
+                const poster = r.poster
+                  ? imageProxyUrl(config.apiBase, r.poster, 'https://movie.douban.com/')
+                  : '';
+                return (
+                  <view
+                    key={`rec-${i}-${r.id}`}
+                    className="list-item"
+                    bindtap={() =>
+                      navigate({
+                        name: 'play',
+                        source: r.source,
+                        id: r.id,
+                        episode: r.episodeIndex,
+                        title: r.title,
+                        poster: r.poster,
+                      })
+                    }
+                  >
+                    <view className="list-poster">
+                      {poster ? (
+                        <image
+                          src={poster}
+                          className="list-poster-image"
+                          mode="aspectFill"
+                        />
+                      ) : null}
+                    </view>
+                    <view className="list-content">
+                      <text className="list-title" text-maxline="1">
+                        {r.title}
+                      </text>
+                      <text className="list-sub">
+                        {r.episodeName || ''} · {r.source_name || ''}
+                      </text>
+                      <text className="list-sub">
+                        {r.playTime > 0 ? `已看 ${Math.floor((r.playTime / Math.max(r.totalTime, 1)) * 100)}%` : '点击继续观看'}
+                      </text>
+                    </view>
+                    <view className="list-action">
+                      <text className="list-action-text">续播</text>
+                    </view>
+                  </view>
+                );
+              })}
+              <view style={{ height: 32 }} />
             </view>
           )}
         </view>
-        {syncError ? (
-          <text style={{ color: '#ef4444', fontSize: 12, marginTop: 8 }}>
-            {syncError}
-          </text>
-        ) : null}
-      </view>
+      ) : null}
 
-      {/* Tab 切换 - 胶囊式 */}
-      <view
-        style={{
-          flexDirection: 'row',
-          marginLeft: 16,
-          marginRight: 16,
-          marginBottom: 8,
-          backgroundColor: '#0a0a0a',
-          borderRadius: 10,
-          padding: 4,
-          borderWidth: 1,
-          borderStyle: 'solid',
-          borderColor: 'rgba(255,255,255,0.08)',
-        }}
-      >
-        {(
-          [
-            { key: 'history' as Tab, label: `播放历史 (${records.length})` },
-            { key: 'fav' as Tab, label: `我的收藏 (${favs.length})` },
-          ]
-        ).map((t) => (
-          <view
-            key={t.key}
-            style={{
-              flex: 1,
-              paddingTop: 8,
-              paddingBottom: 8,
-              alignItems: 'center',
-              borderRadius: 6,
-              backgroundColor:
-                tab === t.key ? '#10b981' : 'transparent',
-            }}
-            bindtap={() => setTab(t.key)}
-          >
-            <text
-              style={{
-                color: tab === t.key ? '#FFFFFF' : '#6b7280',
-                fontSize: 13,
-                fontWeight: '500',
-              }}
-            >
-              {t.label}
-            </text>
-          </view>
-        ))}
-      </view>
-
-      {/* 列表 */}
-      {tab === 'history' ? (
-        records.length === 0 ? (
-          <EmptyView icon="🕐" text="暂无播放记录" />
-        ) : (
-          <scroll-view scroll-y style={{ flex: 1 }}>
-            {records.map((r, i) => (
-              <view
-                key={i}
-                className="list-item"
-                bindtap={() =>
-                  navigate({
-                    name: 'play',
-                    source: r.source,
-                    id: r.id,
-                    episode: r.episodeIndex,
-                    title: r.title,
-                    poster: r.poster,
-                  })
-                }
-              >
-                <view className="list-poster">
-                  {r.poster ? (
-                    <image
-                      src={imageProxyUrl(config.apiBase, r.poster)}
-                      style={{ width: '100%', height: '100%' }}
-                      mode="aspectFill"
-                    />
-                  ) : null}
-                </view>
-                <view className="list-content">
-                  <text className="list-title" text-maxline="1">
-                    {r.title}
-                  </text>
-                  <text className="list-sub" text-maxline="1">
-                    {r.episodeName} · 已看 {fmtDuration(r.playTime)}
-                  </text>
-                  <text className="list-sub">
-                    {new Date(r.updatedAt).toLocaleString()}
-                  </text>
-                </view>
-                <view className="list-action">
-                  <text>继续</text>
-                </view>
-              </view>
-            ))}
-          </scroll-view>
-        )
-      ) : favs.length === 0 ? (
-        <EmptyView icon="⭐" text="还没有收藏" />
-      ) : (
-        <scroll-view scroll-y style={{ flex: 1 }}>
-          {favs.map((f, i) => (
-            <view
-              key={i}
-              className="list-item"
-              bindtap={() =>
-                navigate({ name: 'detail', source: f.source, id: f.id })
-              }
-            >
-              <view className="list-poster">
-                {f.poster ? (
-                  <image
-                    src={imageProxyUrl(config.apiBase, f.poster)}
-                    style={{ width: '100%', height: '100%' }}
-                    mode="aspectFill"
-                  />
-                ) : null}
-              </view>
-              <view className="list-content">
-                <text className="list-title" text-maxline="1">
-                  {f.title}
-                </text>
-                <text className="list-sub" text-maxline="1">
-                  {f.source_name || ''} {f.remarks || ''}
-                </text>
-              </view>
+      {/* 收藏列表 */}
+      {tab === 'favorites' ? (
+        <view>
+          {favorites.length === 0 ? (
+            <view className="empty">
+              <text className="empty-icon">📁</text>
+              <text className="empty-title">收藏夹是空的</text>
+              <text className="empty-text">在详情页点击"收藏"按钮即可添加</text>
             </view>
-          ))}
-        </scroll-view>
-      )}
-    </view>
+          ) : (
+            <view>
+              {favorites.map((f, i) => {
+                const poster =
+                  f.poster || (f as any).cover
+                    ? imageProxyUrl(config.apiBase, f.poster || (f as any).cover, 'https://movie.douban.com/')
+                    : '';
+                return (
+                  <view
+                    key={`fav-${i}-${f.key || f.id}`}
+                    className="list-item"
+                    bindtap={() =>
+                      navigate({
+                        name: 'detail',
+                        source: f.source,
+                        id: f.id,
+                      })
+                    }
+                  >
+                    <view className="list-poster">
+                      {poster ? (
+                        <image
+                          src={poster}
+                          className="list-poster-image"
+                          mode="aspectFill"
+                        />
+                      ) : null}
+                    </view>
+                    <view className="list-content">
+                      <text className="list-title" text-maxline="1">
+                        {f.title}
+                      </text>
+                      <text className="list-sub">
+                        {f.year || ''} {f.remarks ? `· ${f.remarks}` : ''}
+                      </text>
+                      <text className="list-sub">
+                        {f.source_name || '收藏'}
+                      </text>
+                    </view>
+                    <view className="list-action">
+                      <text className="list-action-text">查看</text>
+                    </view>
+                  </view>
+                );
+              })}
+              <view style={{ height: 32 }} />
+            </view>
+          )}
+        </view>
+      ) : null}
+    </scroll-view>
   );
-}
-
-function fmtDuration(s: number): string {
-  if (!s || !isFinite(s)) return '0:00';
-  const m = Math.floor(s / 60);
-  const sec = Math.floor(s % 60);
-  return `${m}:${String(sec).padStart(2, '0')}`;
 }
