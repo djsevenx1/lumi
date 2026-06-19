@@ -128,7 +128,7 @@ export function LoginPage() {
               backgroundColor: 'rgba(239, 68, 68, 0.1)',
             }}
           >
-            <text style={{ color: '#EF4444', fontSize: 13 }}>{error}</text>
+            <text style={{ color: '#ef4444', fontSize: 13 }}>{error}</text>
           </view>
         ) : null}
 
@@ -147,11 +147,11 @@ export function LoginPage() {
             justifyContent: 'center',
           }}
         >
-          <text style={{ color: '#A0A0B8', fontSize: 13 }}>
+          <text style={{ color: '#6b7280', fontSize: 13 }}>
             {mode === 'login' ? '还没有账号?' : '已有账号?'}{' '}
           </text>
           <text
-            style={{ color: '#E50914', fontSize: 13, fontWeight: '600' }}
+            style={{ color: '#10b981', fontSize: 13, fontWeight: '600' }}
             bindtap={() => {
               setError('');
               setMode(mode === 'login' ? 'register' : 'login');

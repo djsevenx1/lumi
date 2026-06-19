@@ -1,4 +1,4 @@
-// 底部 Tab Bar
+// 底部 Tab Bar - Netflix 全宽贴底风格
 import { useRoute, navigate, TABS, type Route } from '../lib/router';
 
 export function TabBar() {
@@ -19,8 +19,15 @@ export function TabBar() {
             className="tab-item"
             bindtap={() => navigate({ name: tab.name } as Route)}
           >
-            <text className="tab-icon">{tab.icon}</text>
-            <text className={active ? 'tab-label tab-label-active' : 'tab-label'}>
+            <text
+              className="tab-icon"
+              style={active ? { color: '#10b981' } : { color: '#6b7280' }}
+            >
+              {tab.icon}
+            </text>
+            <text
+              className={active ? 'tab-label tab-label-active' : 'tab-label'}
+            >
               {tab.label}
             </text>
           </view>

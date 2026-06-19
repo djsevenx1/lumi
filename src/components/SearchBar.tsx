@@ -1,5 +1,5 @@
-// 搜索栏
-import { useState, useCallback } from '@lynx-js/react';
+// 搜索栏 - 对齐 LunaTV 搜索框风格
+import { useState } from '@lynx-js/react';
 
 interface Props {
   value: string;
@@ -16,11 +16,10 @@ export function SearchBar({
   placeholder = '搜索影视...',
   autoFocus,
 }: Props) {
-  // 用 key 强制重置 input(因为 Lynx input 没有 value 属性)
   const [resetKey, setResetKey] = useState(0);
   return (
     <view className="search-bar">
-      <text style={{ fontSize: 18 }}>🔍</text>
+      <text style={{ fontSize: 18, color: '#6b7280' }}>🔍</text>
       <input
         key={`search-${resetKey}`}
         className="search-input"
@@ -37,8 +36,16 @@ export function SearchBar({
             onChange('');
             setResetKey((k) => k + 1);
           }}
+          style={{
+            width: 28,
+            height: 28,
+            borderRadius: 14,
+            backgroundColor: 'rgba(255,255,255,0.1)',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
         >
-          <text style={{ color: '#A0A0B8', fontSize: 16, padding: 4 }}>✕</text>
+          <text style={{ color: '#6b7280', fontSize: 14 }}>✕</text>
         </view>
       ) : null}
     </view>

@@ -1,4 +1,5 @@
-// 视频卡片
+// 视频卡片 - 对齐 LunaTV VideoCard 风格
+// 评分徽章动态颜色 + 集数角标 + 进度条
 import { navigate } from '../lib/router';
 import { imageProxyUrl, getConfig } from '../api/endpoints-helper';
 import type { SearchResult, DoubanItem } from '../api/types';
@@ -13,11 +14,22 @@ type CardData = {
   source_name?: string;
   remarks?: string;
   type_name?: string;
+  progress?: number; // 0-100 播放进度
 };
 
 interface Props {
   data: CardData;
   width?: 'normal' | 'wide';
+}
+
+// 评分徽章颜色:LunaTV 风格(8.5+金色 / 7.0+蓝色 / 6.0+绿色 / 其他灰色)
+function getRatingClass(rate?: string): string {
+  if (!rate) return '';
+  const n = parseFloat(rate);
+  if (isNaN(n)) return '';
+  if (n >= 8.5) return 'video-card-rating-high';
+  if (n >= 7.0) return 'video-card-rating-mid';
+  return 'video-card-rating-low';
 }
 
 export function VideoCard({ data, width = 'normal' }: Props) {
@@ -30,6 +42,8 @@ export function VideoCard({ data, width = 'normal' }: Props) {
   const poster = data.poster
     ? imageProxyUrl(cfg.apiBase, data.poster, 'https://movie.douban.com/')
     : '';
+
+  const ratingClass = getRatingClass(data.rate);
 
   return (
     <view
@@ -44,11 +58,25 @@ export function VideoCard({ data, width = 'normal' }: Props) {
             mode="aspectFill"
           />
         ) : null}
-        {data.rate ? (
-          <view className="video-card-rating">
-            <text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>
-              {data.rate}
-            </text>
+        {/* 集数角标 - 左上角 */}
+        {data.remarks ? (
+          <view className="video-card-remarks">
+            <text>{data.remarks}</text>
+          </view>
+        ) : null}
+        {/* 评分徽章 - 右上角 */}
+        {data.rate && ratingClass ? (
+          <view className={`video-card-rating ${ratingClass}`}>
+            <text>{data.rate}</text>
+          </view>
+        ) : null}
+        {/* 播放进度条 - 底部 */}
+        {data.progress && data.progress > 0 ? (
+          <view className="video-card-progress">
+            <view
+              className="video-card-progress-bar"
+              style={{ width: `${data.progress}%` }}
+            />
           </view>
         ) : null}
       </view>
@@ -56,16 +84,16 @@ export function VideoCard({ data, width = 'normal' }: Props) {
         {data.title}
       </text>
       <text className="video-meta" text-maxline="1">
-        {data.remarks || data.year || data.type_name || ''}
+        {data.year || data.type_name || ''}
       </text>
     </view>
   );
 }
 
-// 横向滚动列表
+// 横向滚动列表 - 对齐 LunaTV ScrollableRow
 export function HorizontalList({
   title,
-  action,
+  action = '查看全部',
   data,
   onActionTap,
 }: {
@@ -79,7 +107,7 @@ export function HorizontalList({
     <view className="section">
       <view className="section-header">
         <text className="section-title">{title}</text>
-        {action ? (
+        {onActionTap ? (
           <view bindtap={onActionTap}>
             <text className="section-action">{action} ›</text>
           </view>

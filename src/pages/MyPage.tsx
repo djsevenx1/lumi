@@ -1,4 +1,5 @@
 // 我的 - 收藏/历史/账号
+// 配色对齐 LunaTV 绿色系 + 玻璃态卡片
 import { useEffect, useState } from '@lynx-js/react';
 import {
   useAuth,
@@ -12,7 +13,7 @@ import {
 import { getFavorites, getPlayRecords } from '../api/endpoints';
 import { imageProxyUrl } from '../api/endpoints-helper';
 import { navigate } from '../lib/router';
-import { EmptyView, LoadingView } from '../components/Common';
+import { EmptyView } from '../components/Common';
 
 type Tab = 'fav' | 'history';
 
@@ -50,28 +51,27 @@ export function MyPage() {
     if (auth.cookie) sync();
   }, [auth.cookie]);
 
-  function onLogout() {
-    clearAuth();
-  }
-
   return (
     <view className="page">
       <view className="app-header">
         <text className="app-title">我的</text>
         {auth.cookie ? (
-          <view bindtap={onLogout}>
-            <text style={{ color: '#A0A0B8', fontSize: 13 }}>退出登录</text>
+          <view bindtap={() => clearAuth()}>
+            <text style={{ color: '#6b7280', fontSize: 13 }}>退出登录</text>
           </view>
         ) : null}
       </view>
 
-      {/* 账号卡片 */}
+      {/* 账号卡片 - 玻璃态 */}
       <view
         style={{
           margin: 16,
           padding: 16,
-          borderRadius: 12,
-          backgroundColor: '#1A1A2E',
+          borderRadius: 14,
+          backgroundColor: '#0a0a0a',
+          borderWidth: 1,
+          borderStyle: 'solid',
+          borderColor: 'rgba(255,255,255,0.08)',
         }}
       >
         <view style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
@@ -84,20 +84,12 @@ export function MyPage() {
             {auth.user ? (
               <>
                 <text
-                  style={{
-                    color: '#FFFFFF',
-                    fontSize: 16,
-                    fontWeight: '600',
-                  }}
+                  style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '600' }}
                 >
                   {auth.user.username}
                 </text>
                 <text
-                  style={{
-                    color: '#A0A0B8',
-                    fontSize: 12,
-                    marginTop: 2,
-                  }}
+                  style={{ color: '#6b7280', fontSize: 12, marginTop: 2 }}
                 >
                   {auth.user.role === 'owner'
                     ? '站长'
@@ -109,20 +101,12 @@ export function MyPage() {
             ) : (
               <>
                 <text
-                  style={{
-                    color: '#FFFFFF',
-                    fontSize: 16,
-                    fontWeight: '600',
-                  }}
+                  style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '600' }}
                 >
                   未登录
                 </text>
                 <text
-                  style={{
-                    color: '#A0A0B8',
-                    fontSize: 12,
-                    marginTop: 2,
-                  }}
+                  style={{ color: '#6b7280', fontSize: 12, marginTop: 2 }}
                 >
                   登录后可同步数据
                 </text>
@@ -130,8 +114,18 @@ export function MyPage() {
             )}
           </view>
           {auth.cookie ? (
-            <view bindtap={sync}>
-              <text style={{ color: '#6366F1', fontSize: 13 }}>
+            <view
+              bindtap={sync}
+              style={{
+                padding: 8,
+                borderRadius: 999,
+                backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                borderWidth: 1,
+                borderStyle: 'solid',
+                borderColor: 'rgba(16, 185, 129, 0.3)',
+              }}
+            >
+              <text style={{ color: '#10b981', fontSize: 12, fontWeight: '600' }}>
                 {syncing ? '同步中...' : '🔄 同步'}
               </text>
             </view>
@@ -146,22 +140,25 @@ export function MyPage() {
           )}
         </view>
         {syncError ? (
-          <text style={{ color: '#EF4444', fontSize: 12, marginTop: 8 }}>
+          <text style={{ color: '#ef4444', fontSize: 12, marginTop: 8 }}>
             {syncError}
           </text>
         ) : null}
       </view>
 
-      {/* Tab 切换 */}
+      {/* Tab 切换 - 胶囊式 */}
       <view
         style={{
           flexDirection: 'row',
           marginLeft: 16,
           marginRight: 16,
           marginBottom: 8,
-          backgroundColor: '#1A1A2E',
-          borderRadius: 8,
+          backgroundColor: '#0a0a0a',
+          borderRadius: 10,
           padding: 4,
+          borderWidth: 1,
+          borderStyle: 'solid',
+          borderColor: 'rgba(255,255,255,0.08)',
         }}
       >
         {(
@@ -178,13 +175,14 @@ export function MyPage() {
               paddingBottom: 8,
               alignItems: 'center',
               borderRadius: 6,
-              backgroundColor: tab === t.key ? '#E50914' : 'transparent',
+              backgroundColor:
+                tab === t.key ? '#10b981' : 'transparent',
             }}
             bindtap={() => setTab(t.key)}
           >
             <text
               style={{
-                color: tab === t.key ? '#FFFFFF' : '#A0A0B8',
+                color: tab === t.key ? '#FFFFFF' : '#6b7280',
                 fontSize: 13,
                 fontWeight: '500',
               }}
@@ -237,7 +235,7 @@ export function MyPage() {
                   </text>
                 </view>
                 <view className="list-action">
-                  <text style={{ color: '#E50914', fontSize: 12 }}>继续</text>
+                  <text>继续</text>
                 </view>
               </view>
             ))}

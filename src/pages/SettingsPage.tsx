@@ -66,7 +66,7 @@ export function SettingsPage() {
       <view className="settings-section">
         <text
           style={{
-            color: '#A0A0B8',
+            color: '#6b7280',
             fontSize: 12,
             marginBottom: 4,
             fontWeight: '600',
@@ -75,7 +75,7 @@ export function SettingsPage() {
         >
           服务配置
         </text>
-        <text style={{ color: '#A0A0B8', fontSize: 12, marginBottom: 8 }}>
+        <text style={{ color: '#6b7280', fontSize: 12, marginBottom: 8 }}>
           输入你的 LunaTV 后端服务地址(包含协议,不包含尾部斜杠)
         </text>
         <input
@@ -94,7 +94,7 @@ export function SettingsPage() {
           bindinput={(e: any) => setSiteName(e.detail.value)}
         />
         {error ? (
-          <text style={{ color: '#EF4444', fontSize: 12, marginTop: 8 }}>
+          <text style={{ color: '#ef4444', fontSize: 12, marginTop: 8 }}>
             {error}
           </text>
         ) : null}
@@ -110,7 +110,7 @@ export function SettingsPage() {
       <view className="settings-section">
         <text
           style={{
-            color: '#A0A0B8',
+            color: '#6b7280',
             fontSize: 12,
             marginBottom: 8,
             fontWeight: '600',
@@ -139,7 +139,7 @@ export function SettingsPage() {
       <view className="settings-section">
         <text
           style={{
-            color: '#A0A0B8',
+            color: '#6b7280',
             fontSize: 12,
             marginBottom: 8,
             fontWeight: '600',
@@ -150,14 +150,14 @@ export function SettingsPage() {
         </text>
         <view className="settings-item" bindtap={onClearCache}>
           <text className="settings-item-label">清除本地缓存</text>
-          <text style={{ color: '#EF4444', fontSize: 12 }}>清空</text>
+          <text style={{ color: '#ef4444', fontSize: 12 }}>清空</text>
         </view>
       </view>
 
       <view className="settings-section">
         <text
           style={{
-            color: '#A0A0B8',
+            color: '#6b7280',
             fontSize: 12,
             marginBottom: 8,
             fontWeight: '600',
@@ -192,7 +192,7 @@ export function SettingsPage() {
       >
         <text
           style={{
-            color: '#6E6E80',
+            color: '#4b5563',
             fontSize: 11,
             textAlign: 'center',
             lineHeight: 16,
