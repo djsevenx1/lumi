@@ -1,7 +1,7 @@
 // 详情页 - 简介 + 集数 + 收藏/播放
 import { useEffect, useState, useCallback } from '@lynx-js/react';
 import { useConfig, useFavorites, isFavoritedLocal, setFavoritesLocal, getAuth } from '../store';
-import { detail, addFavorite, removeFavorite, getFavorites } from '../api/endpoints';
+import { detail, addFavorite, removeFavorite } from '../api/endpoints';
 import { imageProxyUrl } from '../api/endpoints-helper';
 import { back, navigate } from '../lib/router';
 import { LoadingView, ErrorView } from '../components/Common';
@@ -29,8 +29,9 @@ export function DetailPage({ source, id }: Props) {
     setLoading(true);
     setError('');
     try {
+      // detail 返回扁平结构
       const r = await detail(config.apiBase, source, id);
-      setData(r.videoInfo);
+      setData(r);
     } catch (e: any) {
       setError(e?.message || '加载详情失败');
     } finally {
@@ -46,7 +47,7 @@ export function DetailPage({ source, id }: Props) {
     if (!data) return;
     const key = `${data.source}+${data.id}`;
     const auth = getAuth();
-    if (!auth.token) {
+    if (!auth.cookie) {
       navigate({ name: 'login' });
       return;
     }
@@ -57,19 +58,16 @@ export function DetailPage({ source, id }: Props) {
         await removeFavorite(config.apiBase, key);
       } catch {}
     } else {
-      // 添加
+      // 添加 - favorite 必须包含 title 和 source_name
       const fav = {
-        key,
         source: data.source,
+        source_name: data.source_name,
         id: data.id,
         title: data.title,
         poster: data.poster,
-        remarks: data.remarks,
-        year: data.year,
-        type: data.type,
-        addedAt: Date.now(),
+        remarks: data.remarks || '',
       };
-      setFavoritesLocal([fav, ...favorites]);
+      setFavoritesLocal([{ ...fav, key }, ...favorites]);
       try {
         await addFavorite(config.apiBase, key, fav);
       } catch {}
@@ -113,23 +111,21 @@ export function DetailPage({ source, id }: Props) {
   const key = `${data.source}+${data.id}`;
   const isFav = isFavoritedLocal(key);
   const poster = data.poster
-    ? imageProxyUrl(
-        config.apiBase,
-        data.poster,
-        'https://movie.douban.com/',
-      )
+    ? imageProxyUrl(config.apiBase, data.poster)
     : '';
-  const backdrop = data.backdrop
-    ? imageProxyUrl(config.apiBase, data.backdrop)
-    : poster;
+
+  // 集数名称:优先用 episodes_titles,否则用序号
+  const episodeNames = data.episodes_titles && data.episodes_titles.length > 0
+    ? data.episodes_titles
+    : data.episodes.map((_, i) => `第${i + 1}集`);
 
   return (
     <scroll-view scroll-y className="page page-no-tabbar">
       {/* Hero */}
       <view className="detail-hero">
-        {backdrop ? (
+        {poster ? (
           <image
-            src={backdrop}
+            src={poster}
             style={{ width: '100%', height: '100%' }}
             mode="aspectFill"
           />
@@ -156,47 +152,13 @@ export function DetailPage({ source, id }: Props) {
             {data.title}
           </text>
           <text className="detail-sub">
-            {data.year || ''} {data.region ? `· ${data.region}` : ''}
+            {data.year || ''} {data.type_name ? `· ${data.type_name}` : ''}
           </text>
-          <text className="detail-sub">
-            {data.director ? `导演: ${data.director}` : ''}
-          </text>
-          {data.actors ? (
-            <text
-              className="detail-sub"
-              text-maxline="2"
-              style={{ lineHeight: 18 }}
-            >
-              主演: {data.actors}
-            </text>
+          {data.source_name ? (
+            <text className="detail-sub">来源: {data.source_name}</text>
           ) : null}
-          {data.rate ? (
-            <view
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 6,
-                marginTop: 4,
-              }}
-            >
-              <text style={{ color: '#F59E0B', fontSize: 14 }}>⭐</text>
-              <text
-                style={{ color: '#F59E0B', fontSize: 16, fontWeight: '700' }}
-              >
-                {data.rate}
-              </text>
-              {data.remarks ? (
-                <text
-                  style={{
-                    color: '#A0A0B8',
-                    fontSize: 12,
-                    marginLeft: 8,
-                  }}
-                >
-                  {data.remarks}
-                </text>
-              ) : null}
-            </view>
+          {data.remarks ? (
+            <text className="detail-sub">{data.remarks}</text>
           ) : null}
         </view>
       </view>
@@ -217,10 +179,10 @@ export function DetailPage({ source, id }: Props) {
       </view>
 
       {/* 简介 */}
-      {data.description ? (
+      {data.desc ? (
         <view className="detail-overview">
           <text className="detail-overview-title">简介</text>
-          <text className="detail-overview-text">{data.description}</text>
+          <text className="detail-overview-text">{data.desc}</text>
         </view>
       ) : null}
 
@@ -259,7 +221,7 @@ export function DetailPage({ source, id }: Props) {
                       : { color: '#FFFFFF', fontSize: 13 }
                   }
                 >
-                  {ep}
+                  {episodeNames[i] || `第${i + 1}集`}
                 </text>
               </view>
             ))}

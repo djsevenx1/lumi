@@ -1,11 +1,10 @@
 // 分类页(根据 type 浏览更多内容)
 import { useEffect, useState, useCallback } from '@lynx-js/react';
 import { useConfig } from '../store';
-import { search, doubanHot } from '../api/endpoints';
+import { doubanHot } from '../api/endpoints';
 import { back, navigate } from '../lib/router';
 import { LoadingView, ErrorView, EmptyView } from '../components/Common';
 import { VideoCard } from '../components/VideoCard';
-import { VIDEO_TYPES } from '../lib/config';
 import type { SearchResult, DoubanItem } from '../api/types';
 
 interface Props {
@@ -37,36 +36,26 @@ export function CategoryPage({ type }: Props) {
     setLoading(true);
     setError('');
     try {
-      // 优先用 douban 接口拉热门,失败时回落到 search
-      let list: SearchResult[] = [];
-      try {
-        const r = await doubanHot(
-          config.apiBase,
-          (type === 'anime' || type === 'tv' || type === 'variety' || type === 'movie'
-            ? type
-            : 'movie') as any,
-          30,
-        );
-        list = r.list.map((it: DoubanItem) => ({
-          id: it.id,
-          title: it.title,
-          poster: it.poster,
-          year: it.year,
-          rate: it.rate,
-          source: 'douban',
-          sourceName: '豆瓣',
-        }));
-      } catch {
-        const r = await search(config.apiBase, label, { type });
-        list = r.results || [];
-      }
+      // douban 接口:type=movie|tv, tag=热门
+      // anime/variety 映射到 tv
+      const doubanType: 'movie' | 'tv' = type === 'movie' ? 'movie' : 'tv';
+      const r = await doubanHot(config.apiBase, doubanType, '热门', 30);
+      const list: SearchResult[] = r.list.map((it: DoubanItem) => ({
+        id: it.id,
+        title: it.title,
+        poster: it.poster,
+        year: it.year,
+        rate: it.rate,
+        source: '',
+        source_name: '豆瓣',
+      }));
       setData(list);
     } catch (e: any) {
       setError(e?.message || '加载失败');
     } finally {
       setLoading(false);
     }
-  }, [config.apiBase, type, label]);
+  }, [config.apiBase, type]);
 
   useEffect(() => {
     load();

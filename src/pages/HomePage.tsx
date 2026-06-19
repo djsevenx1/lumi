@@ -1,18 +1,16 @@
-// 首页 - Banner + 继续观看 + 热门电影/剧集/动漫/综艺 + 收藏推荐
+// 首页 - Banner + 继续观看 + 热门电影/剧集 + 收藏推荐
 import { useEffect, useState, useCallback } from '@lynx-js/react';
 import { useConfig, getAuth, getRecordsLocal } from '../store';
-import { doubanHot, search } from '../api/endpoints';
+import { doubanHot } from '../api/endpoints';
 import { navigate } from '../lib/router';
 import { VideoCard, HorizontalList } from '../components/VideoCard';
-import { LoadingView, ErrorView, EmptyView } from '../components/Common';
+import { LoadingView, ErrorView } from '../components/Common';
 import type { SearchResult, DoubanItem, PlayRecord } from '../api/types';
 
 export function HomePage() {
   const [config] = useConfig();
   const [hotMovie, setHotMovie] = useState<SearchResult[]>([]);
   const [hotTv, setHotTv] = useState<SearchResult[]>([]);
-  const [hotAnime, setHotAnime] = useState<SearchResult[]>([]);
-  const [hotVariety, setHotVariety] = useState<SearchResult[]>([]);
   const [banner, setBanner] = useState<DoubanItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -28,25 +26,21 @@ export function HomePage() {
     setLoading(true);
     setError('');
     try {
-      const [m, t, a, v] = await Promise.all([
-        doubanHot(config.apiBase, 'movie', 12).catch(() => ({ list: [] })),
-        doubanHot(config.apiBase, 'tv', 12).catch(() => ({ list: [] })),
-        doubanHot(config.apiBase, 'anime', 10).catch(() => ({ list: [] })),
-        doubanHot(config.apiBase, 'variety', 10).catch(() => ({ list: [] })),
+      // douban 接口不需要鉴权,type=movie|tv,tag=热门
+      const [m, t] = await Promise.all([
+        doubanHot(config.apiBase, 'movie', '热门', 12).catch(() => ({ list: [] as DoubanItem[] })),
+        doubanHot(config.apiBase, 'tv', '热门', 12).catch(() => ({ list: [] as DoubanItem[] })),
       ]);
       const toCard = (it: DoubanItem): SearchResult => ({
         id: it.id,
         title: it.title,
         poster: it.poster,
         year: it.year,
-        rate: it.rate,
-        source: 'douban',
-        sourceName: '豆瓣',
+        source: '',
+        source_name: '豆瓣',
       });
       setHotMovie(m.list.map(toCard));
       setHotTv(t.list.map(toCard));
-      setHotAnime(a.list.map(toCard));
-      setHotVariety(v.list.map(toCard));
       setBanner(m.list.slice(0, 5));
       setRecords(getRecordsLocal());
     } catch (e: any) {
@@ -93,18 +87,7 @@ export function HomePage() {
     <scroll-view scroll-y className="page">
       {/* Banner */}
       {currentBanner ? (
-        <view
-          className="banner"
-          bindtap={() => {
-            if (currentBanner.id) {
-              navigate({
-                name: 'detail',
-                source: 'douban',
-                id: currentBanner.id,
-              });
-            }
-          }}
-        >
+        <view className="banner">
           <image
             src={currentBanner.poster}
             style={{ width: '100%', height: '100%' }}
@@ -186,19 +169,9 @@ export function HomePage() {
         data={hotTv}
         onActionTap={() => navigate({ name: 'category', type: 'tv' })}
       />
-      <HorizontalList
-        title="🎌 热门动漫"
-        data={hotAnime}
-        onActionTap={() => navigate({ name: 'category', type: 'anime' })}
-      />
-      <HorizontalList
-        title="🎉 热门综艺"
-        data={hotVariety}
-        onActionTap={() => navigate({ name: 'category', type: 'variety' })}
-      />
 
       {/* 未登录提示 */}
-      {!auth.token ? (
+      {!auth.cookie ? (
         <view
           className="section"
           bindtap={() => navigate({ name: 'login' })}
@@ -219,7 +192,7 @@ export function HomePage() {
             <text style={{ fontSize: 28 }}>👋</text>
             <view style={{ flex: 1 }}>
               <text style={{ color: '#FFFFFF', fontSize: 15, fontWeight: '600' }}>
-                登录后可同步收藏
+                登录后可搜索和同步收藏
               </text>
               <text style={{ color: '#A0A0B8', fontSize: 12, marginTop: 2 }}>
                 点击前往登录页面

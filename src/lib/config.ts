@@ -17,7 +17,7 @@ export const defaultConfig: AppConfig = {
 
 export const STORAGE_KEYS = {
   CONFIG: 'lunatv:config',
-  AUTH_TOKEN: 'lunatv:auth_token',
+  AUTH_COOKIE: 'lunatv:auth_cookie', // user_auth cookie 值
   AUTH_USER: 'lunatv:auth_user',
   FAVORITES_CACHE: 'lunatv:favorites_cache',
   PLAY_RECORDS_CACHE: 'lunatv:playrecords_cache',

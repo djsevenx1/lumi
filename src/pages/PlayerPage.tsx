@@ -1,8 +1,8 @@
-// 播放器页 - Lynx 原生 <video> + 自定义控件
+// 播放器页 - 从 detail 获取 episodes 直链 + 自定义控件
 import { useEffect, useState, useRef, useCallback } from '@lynx-js/react';
-import { useConfig, setRecordsLocal, getRecordsLocal, usePlayRecords } from '../store';
-import { parseVideo } from '../api/endpoints';
-import { back, navigate } from '../lib/router';
+import { useConfig, setRecordsLocal, getRecordsLocal, usePlayRecords, getAuth } from '../store';
+import { detail, savePlayRecord } from '../api/endpoints';
+import { back } from '../lib/router';
 import { LoadingView, ErrorView } from '../components/Common';
 import type { PlayRecord } from '../api/types';
 
@@ -19,8 +19,6 @@ function renderVideo(
   poster?: string,
   events: Record<string, any> = {},
 ): any {
-  // 默认占位(无 native 视频实现)
-  // 在生产项目里,需要替换为: <video-player src={src} poster={poster} {...events} />
   return (
     <view
       style={{
@@ -82,8 +80,8 @@ export function PlayerPage({ source, id, episode, title, poster }: Props) {
   const [current, setCurrent] = useState(0);
   const [duration, setDuration] = useState(0);
   const [showControls, setShowControls] = useState(true);
-  const [qualities, setQualities] = useState<Array<{ name: string; url: string }>>([]);
-  const [activeQuality, setActiveQuality] = useState(0);
+  const [episodes, setEpisodes] = useState<string[]>([]);
+  const [sourceName, setSourceName] = useState('');
   const controlsTimer = useRef<any>(null);
 
   const load = useCallback(async () => {
@@ -95,15 +93,19 @@ export function PlayerPage({ source, id, episode, title, poster }: Props) {
     setLoading(true);
     setError('');
     try {
-      const r = await parseVideo(config.apiBase, source, id, episode);
-      if (r.qualities && r.qualities.length > 0) {
-        setQualities(r.qualities);
-        setVideoUrl(r.qualities[0].url);
+      // 从 detail 获取 episodes 直链(search/detail 已返回 m3u8 URL)
+      const r = await detail(config.apiBase, source, id);
+      setEpisodes(r.episodes || []);
+      setSourceName(r.source_name || '');
+      if (r.episodes && r.episodes.length > episode) {
+        setVideoUrl(r.episodes[episode]);
+      } else if (r.episodes && r.episodes.length > 0) {
+        setVideoUrl(r.episodes[0]);
       } else {
-        setVideoUrl(r.url);
+        setError('没有可播放的集数');
       }
     } catch (e: any) {
-      setError(e?.message || '解析视频失败');
+      setError(e?.message || '加载视频失败');
     } finally {
       setLoading(false);
     }
@@ -121,21 +123,21 @@ export function PlayerPage({ source, id, episode, title, poster }: Props) {
       (r) => r.source === source && r.id === id && r.episodeIndex === episode,
     );
     if (rec && rec.playTime > 5) {
-      // 触发 seek(用 ref 注入,这里先存 state)
-      (window as any).__pendingSeek = rec.playTime;
+      (globalThis as any).__pendingSeek = rec.playTime;
     }
   }, [videoUrl, source, id, episode]);
 
   function saveProgress(currentTime: number, total: number) {
     if (!currentTime || currentTime < 1) return;
     const records = getRecordsLocal();
-    const key = `${source}+${id}`;
+    const key = `${source}+${id}+${episode}`;
     const idx = records.findIndex(
       (r) => r.source === source && r.id === id && r.episodeIndex === episode,
     );
     const next: PlayRecord = {
-      key: `${key}+${episode}`,
+      key,
       source,
+      source_name: sourceName,
       id,
       title: title || '',
       poster: poster || '',
@@ -147,9 +149,25 @@ export function PlayerPage({ source, id, episode, title, poster }: Props) {
     };
     if (idx >= 0) records[idx] = next;
     else records.unshift(next);
-    // 限制 50 条
     setRecordsLocal(records.slice(0, 50));
     refreshRec();
+
+    // 同步到服务端
+    const auth = getAuth();
+    if (auth.cookie && config.apiBase) {
+      savePlayRecord(config.apiBase, key, {
+        source,
+        source_name: sourceName,
+        id,
+        title: title || '',
+        poster: poster || '',
+        episodeIndex: episode,
+        episodeName: `第${episode + 1}集`,
+        playTime: currentTime,
+        totalTime: total,
+        updatedAt: Date.now(),
+      }).catch(() => {});
+    }
   }
 
   function toggleControls() {
@@ -161,36 +179,15 @@ export function PlayerPage({ source, id, episode, title, poster }: Props) {
     }
   }
 
-  function onLoaded(e: any) {
-    const d = e?.detail?.duration || 0;
-    setDuration(d);
-    const seekTo = (window as any).__pendingSeek;
-    if (seekTo && seekTo < d - 5) {
-      // Lynx <video> 暂用 attribute 设置初值;但通常没提供 seek 方法
-      // 这里仅记录,用户在 UI 上手动选集
-    }
-  }
-
-  function onTimeUpdate(e: any) {
-    const t = e?.detail?.currentTime || 0;
-    setCurrent(t);
-  }
-
   function onEnded() {
-    // 自动保存并退出
     saveProgress(duration, duration);
     back();
-  }
-
-  function switchQuality(idx: number) {
-    setActiveQuality(idx);
-    setVideoUrl(qualities[idx].url);
   }
 
   if (loading) {
     return (
       <view className="player-page center">
-        <LoadingView text="解析视频地址..." />
+        <LoadingView text="加载视频地址..." />
       </view>
     );
   }
@@ -199,7 +196,7 @@ export function PlayerPage({ source, id, episode, title, poster }: Props) {
       <view className="player-page center">
         <view style={{ padding: 24 }}>
           <ErrorView
-            message={error || '无法解析视频'}
+            message={error || '无法加载视频'}
             onRetry={load}
           />
         </view>
@@ -216,13 +213,6 @@ export function PlayerPage({ source, id, episode, title, poster }: Props) {
 
   return (
     <view className="player-page">
-      {/*
-        Lynx 没有内置 <video> 元素。
-        实际播放需要 native module:
-        - @sigx/lynx-video  (<video-player> 标签)
-        - 或自定义原生播放器
-        这里用 any 兜底,实际项目里替换为 <video-player src=...> 即可
-      */}
       {renderVideo(videoUrl, poster, {
         bindtap: toggleControls,
         bindplay: () => setPaused(false),
@@ -231,8 +221,8 @@ export function PlayerPage({ source, id, episode, title, poster }: Props) {
           saveProgress(current, duration);
         },
         bindended: onEnded,
-        bindtimeupdate: onTimeUpdate,
-        bindloadedmetadata: onLoaded,
+        bindtimeupdate: (e: any) => setCurrent(e?.detail?.currentTime || 0),
+        bindloadedmetadata: (e: any) => setDuration(e?.detail?.duration || 0),
         binderror: () => setError('视频加载失败'),
       })}
 
@@ -245,20 +235,6 @@ export function PlayerPage({ source, id, episode, title, poster }: Props) {
             <text className="player-title" text-maxline="1">
               {title || '播放中'}
             </text>
-            {qualities.length > 1 ? (
-              <view
-                className="player-btn"
-                bindtap={() => {
-                  // 简单循环切换清晰度
-                  const next = (activeQuality + 1) % qualities.length;
-                  switchQuality(next);
-                }}
-              >
-                <text style={{ color: '#FFFFFF', fontSize: 12 }}>
-                  {qualities[activeQuality].name}
-                </text>
-              </view>
-            ) : null}
           </view>
           <view className="player-controls">
             <view className="player-progress">
@@ -284,12 +260,7 @@ export function PlayerPage({ source, id, episode, title, poster }: Props) {
               <view
                 className="player-btn"
                 style={{ width: 56, height: 56, borderRadius: 28 }}
-                bindtap={() => {
-                  // 简单切换播放/暂停
-                  // (Lynx <video> 元素在 native 层有 play/pause 方法,通过 ref 调用)
-                  // 这里仅做 UI 反馈
-                  setPaused((p) => !p);
-                }}
+                bindtap={() => setPaused((p) => !p)}
               >
                 <text style={{ color: '#FFFFFF', fontSize: 24 }}>
                   {paused ? '▶' : '⏸'}

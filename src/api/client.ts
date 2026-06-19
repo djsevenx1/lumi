@@ -1,5 +1,9 @@
 // HTTP 客户端
-// 统一封装 fetch,自动带上 token、错误处理
+// LunaTV 后端用 cookie session 鉴权(user_auth cookie),不是 Bearer token。
+// 策略:
+//   1. 登录/注册成功后,从 Set-Cookie header 提取 user_auth 值,存到 storage
+//   2. 后续请求手动加 Cookie header(原生端 fetch 不自动管理 cookie)
+//   3. 同时加 credentials: 'include'(Web 端 fallback)
 
 import { storage } from '../lib/storage';
 import { STORAGE_KEYS } from '../lib/config';
@@ -21,7 +25,7 @@ interface RequestOptions {
   headers?: Record<string, string>;
   signal?: AbortSignal;
   timeout?: number; // ms
-  raw?: boolean; // 返回原始 Response
+  raw?: boolean; // 返回原始 Response(用于提取 Set-Cookie)
 }
 
 function buildUrl(
@@ -45,6 +49,39 @@ function buildUrl(
   return url;
 }
 
+// 从 Set-Cookie header 提取 user_auth 的值
+function extractUserAuth(setCookie: string | null): string | null {
+  if (!setCookie) return null;
+  // 格式: user_auth=xxx; Path=/; Expires=...
+  const match = setCookie.match(/user_auth=([^;]+)/);
+  return match ? match[1] : null;
+}
+
+// 保存/读取 cookie
+export function saveAuthCookie(cookieValue: string) {
+  storage.set(STORAGE_KEYS.AUTH_COOKIE, cookieValue);
+  // 尝试从 cookie 里解析 username
+  try {
+    const decoded = decodeURIComponent(cookieValue);
+    const parsed = JSON.parse(decoded);
+    if (parsed.username) {
+      storage.set(STORAGE_KEYS.AUTH_USER, {
+        username: parsed.username,
+        role: parsed.role || 'user',
+      });
+    }
+  } catch {}
+}
+
+export function getAuthCookie(): string | null {
+  return storage.get<string>(STORAGE_KEYS.AUTH_COOKIE);
+}
+
+export function clearAuthCookie() {
+  storage.remove(STORAGE_KEYS.AUTH_COOKIE);
+  storage.remove(STORAGE_KEYS.AUTH_USER);
+}
+
 export async function request<T = any>(
   base: string,
   path: string,
@@ -60,8 +97,11 @@ export async function request<T = any>(
     raw = false,
   } = opts;
 
-  const token = storage.get<string>(STORAGE_KEYS.AUTH_TOKEN);
-  if (token) headers['Authorization'] = `Bearer ${token}`;
+  // cookie 鉴权:从 storage 读 user_auth,手动加 Cookie header
+  const cookie = getAuthCookie();
+  if (cookie) {
+    headers['Cookie'] = `user_auth=${cookie}`;
+  }
 
   if (body && !(body instanceof FormData) && !headers['Content-Type']) {
     headers['Content-Type'] = 'application/json';
@@ -71,7 +111,6 @@ export async function request<T = any>(
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeout);
-  // 如果外部有 signal,联动取消
   if (signal) {
     if (signal.aborted) controller.abort();
     signal.addEventListener('abort', () => controller.abort());
@@ -91,7 +130,9 @@ export async function request<T = any>(
               ? body
               : JSON.stringify(body),
       signal: controller.signal,
-    });
+      // Web 端 fallback:让浏览器自动管理 cookie
+      credentials: 'include',
+    } as any);
   } catch (e: any) {
     clearTimeout(timer);
     throw new ApiError(
@@ -102,7 +143,25 @@ export async function request<T = any>(
   }
   clearTimeout(timer);
 
-  if (raw) return res as any;
+  // 提取 Set-Cookie(登录/注册时用)
+  if (raw) {
+    // 尝试从 header 提取 cookie
+    const setCookie = res.headers.get('set-cookie');
+    const authCookie = extractUserAuth(setCookie);
+    if (authCookie) {
+      saveAuthCookie(authCookie);
+    }
+    return res as any;
+  }
+
+  // 非 raw 模式也尝试提取 cookie(某些环境下 header 可读)
+  try {
+    const setCookie = res.headers.get('set-cookie');
+    const authCookie = extractUserAuth(setCookie);
+    if (authCookie) {
+      saveAuthCookie(authCookie);
+    }
+  } catch {}
 
   const ctype = res.headers.get('content-type') || '';
   let data: any;
@@ -117,8 +176,7 @@ export async function request<T = any>(
   if (!res.ok) {
     // 401:清掉登录态
     if (res.status === 401) {
-      storage.remove(STORAGE_KEYS.AUTH_TOKEN);
-      storage.remove(STORAGE_KEYS.AUTH_USER);
+      clearAuthCookie();
     }
     throw new ApiError(
       (data && (data.message || data.error)) || `HTTP ${res.status}`,

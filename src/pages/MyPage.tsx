@@ -2,18 +2,17 @@
 import { useEffect, useState } from '@lynx-js/react';
 import {
   useAuth,
-  setAuth,
+  clearAuth,
   useFavorites,
   usePlayRecords,
-  setFavoritesLocal,
-  setRecordsLocal,
+  setFavoritesFromMap,
+  setRecordsFromMap,
+  useConfig,
 } from '../store';
-import { getFavorites, getPlayRecords, logout } from '../api/endpoints';
+import { getFavorites, getPlayRecords } from '../api/endpoints';
 import { imageProxyUrl } from '../api/endpoints-helper';
-import { useConfig } from '../store';
 import { navigate } from '../lib/router';
 import { EmptyView, LoadingView } from '../components/Common';
-import type { Favorite, PlayRecord } from '../api/types';
 
 type Tab = 'fav' | 'history';
 
@@ -27,7 +26,7 @@ export function MyPage() {
   const [syncError, setSyncError] = useState('');
 
   async function sync() {
-    if (!config.apiBase || !auth.token) {
+    if (!config.apiBase || !auth.cookie) {
       navigate({ name: 'login' });
       return;
     }
@@ -35,11 +34,11 @@ export function MyPage() {
     setSyncError('');
     try {
       const [f, r] = await Promise.all([
-        getFavorites(config.apiBase).catch(() => ({ favorites: [] as Favorite[] })),
-        getPlayRecords(config.apiBase).catch(() => ({ records: [] as PlayRecord[] })),
+        getFavorites(config.apiBase).catch(() => ({})),
+        getPlayRecords(config.apiBase).catch(() => ({})),
       ]);
-      setFavoritesLocal(f.favorites || []);
-      setRecordsLocal(r.records || []);
+      setFavoritesFromMap(f || {});
+      setRecordsFromMap(r || {});
     } catch (e: any) {
       setSyncError(e?.message || '同步失败');
     } finally {
@@ -48,23 +47,18 @@ export function MyPage() {
   }
 
   useEffect(() => {
-    if (auth.token) sync();
-  }, [auth.token]);
+    if (auth.cookie) sync();
+  }, [auth.cookie]);
 
-  async function onLogout() {
-    try {
-      if (config.apiBase && auth.token) {
-        await logout(config.apiBase);
-      }
-    } catch {}
-    setAuth(null, null);
+  function onLogout() {
+    clearAuth();
   }
 
   return (
     <view className="page">
       <view className="app-header">
         <text className="app-title">我的</text>
-        {auth.token ? (
+        {auth.cookie ? (
           <view bindtap={onLogout}>
             <text style={{ color: '#A0A0B8', fontSize: 13 }}>退出登录</text>
           </view>
@@ -110,9 +104,6 @@ export function MyPage() {
                     : auth.user.role === 'admin'
                       ? '管理员'
                       : '用户'}
-                  {auth.user.expiresAt
-                    ? ` · 到期 ${new Date(auth.user.expiresAt).toLocaleDateString()}`
-                    : ''}
                 </text>
               </>
             ) : (
@@ -138,7 +129,7 @@ export function MyPage() {
               </>
             )}
           </view>
-          {auth.token ? (
+          {auth.cookie ? (
             <view bindtap={sync}>
               <text style={{ color: '#6366F1', fontSize: 13 }}>
                 {syncing ? '同步中...' : '🔄 同步'}
@@ -228,7 +219,7 @@ export function MyPage() {
                 <view className="list-poster">
                   {r.poster ? (
                     <image
-                      src={imageProxyUrl(config.apiBase, r.poster, 'https://movie.douban.com/')}
+                      src={imageProxyUrl(config.apiBase, r.poster)}
                       style={{ width: '100%', height: '100%' }}
                       mode="aspectFill"
                     />
@@ -267,7 +258,7 @@ export function MyPage() {
               <view className="list-poster">
                 {f.poster ? (
                   <image
-                    src={imageProxyUrl(config.apiBase, f.poster, 'https://movie.douban.com/')}
+                    src={imageProxyUrl(config.apiBase, f.poster)}
                     style={{ width: '100%', height: '100%' }}
                     mode="aspectFill"
                   />
@@ -278,7 +269,7 @@ export function MyPage() {
                   {f.title}
                 </text>
                 <text className="list-sub" text-maxline="1">
-                  {f.year || ''} {f.remarks || ''}
+                  {f.source_name || ''} {f.remarks || ''}
                 </text>
               </view>
             </view>

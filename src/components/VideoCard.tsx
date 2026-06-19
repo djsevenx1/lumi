@@ -10,8 +10,9 @@ type CardData = {
   year?: string;
   rate?: string;
   source?: string;
+  source_name?: string;
   remarks?: string;
-  type?: string;
+  type_name?: string;
 };
 
 interface Props {
@@ -55,7 +56,7 @@ export function VideoCard({ data, width = 'normal' }: Props) {
         {data.title}
       </text>
       <text className="video-meta" text-maxline="1">
-        {data.remarks || data.year || data.type || ''}
+        {data.remarks || data.year || data.type_name || ''}
       </text>
     </view>
   );

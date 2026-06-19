@@ -1,10 +1,10 @@
 // 登录页
 import { useState } from '@lynx-js/react';
-import { useConfig, setAuth } from '../store';
+import { useConfig, setAuth, getAuth } from '../store';
 import { login, register } from '../api/endpoints';
+import { getAuthCookie } from '../api/client';
 import { back, navigate } from '../lib/router';
 import { LoadingView } from '../components/Common';
-import type { User } from '../api/types';
 
 type Mode = 'login' | 'register';
 
@@ -13,6 +13,7 @@ export function LoginPage() {
   const [mode, setMode] = useState<Mode>('login');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [invite, setInvite] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -26,23 +27,34 @@ export function LoginPage() {
       setError('请输入用户名和密码');
       return;
     }
+    if (mode === 'register' && password !== confirmPassword) {
+      setError('两次输入的密码不一致');
+      return;
+    }
     setLoading(true);
     setError('');
     try {
       if (mode === 'login') {
         const r = await login(config.apiBase, username.trim(), password);
-        if (!r.ok) throw new Error(r.message || '登录失败');
-        setAuth(r.token || '', (r.user as User) || null);
+        if (!r.ok) throw new Error(r.error || r.message || '登录失败');
       } else {
         const r = await register(
           config.apiBase,
           username.trim(),
           password,
+          confirmPassword,
           invite.trim() || undefined,
         );
-        if (!r.ok) throw new Error(r.message || '注册失败');
-        setAuth(r.token || '', (r.user as User) || null);
+        if (!r.ok) throw new Error(r.error || r.message || '注册失败');
+        if (r.needDelay) {
+          // upstash 模式需要等待数据同步
+          await new Promise((r) => setTimeout(r, 2000));
+        }
       }
+      // 登录/注册成功后,cookie 已被 client.ts 自动提取存储
+      // 通知 store 刷新 auth 状态
+      const cookie = getAuthCookie();
+      setAuth(cookie);
       back();
     } catch (e: any) {
       setError(e?.message || '操作失败');
@@ -89,13 +101,23 @@ export function LoginPage() {
           bindinput={(e: any) => setPassword(e.detail.value)}
         />
         {mode === 'register' ? (
-          <input
-            key="input-invite"
-            className="input"
-            placeholder="邀请码(可选)"
-            placeholder-class="input-placeholder"
-            bindinput={(e: any) => setInvite(e.detail.value)}
-          />
+          <>
+            <input
+              key="input-confirm"
+              className="input"
+              type="password"
+              placeholder="确认密码"
+              placeholder-class="input-placeholder"
+              bindinput={(e: any) => setConfirmPassword(e.detail.value)}
+            />
+            <input
+              key="input-invite"
+              className="input"
+              placeholder="邀请码(可选)"
+              placeholder-class="input-placeholder"
+              bindinput={(e: any) => setInvite(e.detail.value)}
+            />
+          </>
         ) : null}
 
         {error ? (

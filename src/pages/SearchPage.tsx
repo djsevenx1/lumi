@@ -1,11 +1,10 @@
-// 搜索页 - 实时搜索 + 搜索历史 + 热搜
+// 搜索页 - 实时搜索 + 搜索历史
 import { useEffect, useState, useCallback, useRef } from '@lynx-js/react';
-import { useConfig, useSearchHistory, pushSearchHistory, clearSearchHistory } from '../store';
+import { useConfig, useSearchHistory, pushSearchHistory, clearSearchHistory, getAuth } from '../store';
 import { search } from '../api/endpoints';
-import { VideoCard, HorizontalList } from '../components/VideoCard';
+import { VideoCard } from '../components/VideoCard';
 import { LoadingView, EmptyView, ErrorView } from '../components/Common';
 import { SearchBar } from '../components/SearchBar';
-import { VIDEO_TYPES, type VideoType } from '../lib/config';
 import { navigate } from '../lib/router';
 import type { SearchResult } from '../api/types';
 
@@ -13,7 +12,6 @@ export function SearchPage() {
   const [config] = useConfig();
   const [history, refresh] = useSearchHistory();
   const [keyword, setKeyword] = useState('');
-  const [activeType, setActiveType] = useState<VideoType>('all');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -32,16 +30,21 @@ export function SearchPage() {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [keyword, activeType]);
+  }, [keyword]);
 
   async function doSearch(q: string) {
     if (!q.trim() || !config.apiBase) return;
+    // 搜索需要登录(cookie 鉴权)
+    const auth = getAuth();
+    if (!auth.cookie) {
+      setError('请先登录后再搜索');
+      setSearched(true);
+      return;
+    }
     setLoading(true);
     setError('');
     try {
-      const r = await search(config.apiBase, q, {
-        type: activeType === 'all' ? '' : activeType,
-      });
+      const r = await search(config.apiBase, q);
       setResults(r.results || []);
       setSearched(true);
     } catch (e: any) {
@@ -59,7 +62,7 @@ export function SearchPage() {
       }
       doSearch(q);
     },
-    [activeType, config.apiBase],
+    [config.apiBase],
   );
 
   function onPickHistory(q: string) {
@@ -86,27 +89,6 @@ export function SearchPage() {
         placeholder="搜索电影、剧集、动漫..."
         autoFocus
       />
-
-      {/* 类型筛选 */}
-      <view className="chip-row">
-        {VIDEO_TYPES.map((t) => (
-          <view
-            key={t.key}
-            className={activeType === t.key ? 'chip chip-active' : 'chip'}
-            bindtap={() => setActiveType(t.key)}
-          >
-            <text
-              style={
-                activeType === t.key
-                  ? { color: '#FFFFFF', fontWeight: '600' }
-                  : { color: '#A0A0B8' }
-              }
-            >
-              {t.label}
-            </text>
-          </view>
-        ))}
-      </view>
 
       {/* 结果区 */}
       {loading ? (
@@ -156,9 +138,6 @@ export function SearchPage() {
                   </view>
                   <text
                     style={{ color: '#6E6E80', fontSize: 18, padding: 4 }}
-                    catchtap={(e: any) => {
-                      e?.stopPropagation?.();
-                    }}
                   >
                     ›
                   </text>

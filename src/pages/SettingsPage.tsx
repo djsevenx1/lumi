@@ -1,6 +1,6 @@
 // 设置页 - API 地址 / 主题 / 缓存 / 关于
 import { useState } from '@lynx-js/react';
-import { useConfig, setConfig, useAuth, setAuth, setFavoritesLocal, setRecordsLocal } from '../store';
+import { useConfig, setConfig, useAuth, clearAuth, setFavoritesLocal, setRecordsLocal } from '../store';
 import { clearSearchHistory } from '../store';
 import { storage } from '../lib/storage';
 import { STORAGE_KEYS } from '../lib/config';
@@ -46,7 +46,7 @@ export function SettingsPage() {
   }
 
   function onLogout() {
-    setAuth(null, null);
+    clearAuth();
   }
 
   return (
@@ -125,7 +125,7 @@ export function SettingsPage() {
             {auth.user?.username || '未登录'}
           </text>
         </view>
-        {auth.token ? (
+        {auth.cookie ? (
           <view
             className="settings-item"
             bindtap={onLogout}
