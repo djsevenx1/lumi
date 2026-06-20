@@ -151,58 +151,53 @@ export function LoginPage() {
             </view>
           </view>
 
-          {/* 服务器地址输入框 */}
-          <view className="login-input-wrap">
-            <text className="login-input-icon">🌐</text>
+          {/* 服务器地址输入框 - 内联 style 对齐 Lynx 官方示例 */}
+          <view style={{ width: "100%", padding: "10px", backgroundColor: "#F3F4F6", borderRadius: "10px", marginTop: "12px", display: "flex", flexDirection: "row", alignItems: "center" }}>
+            <text style={{ fontSize: "18px", marginRight: "8px" }}>🌐</text>
             <input
-              className="login-input"
+              style={{ width: "100%", fontSize: "15px", color: "#1F2937" }}
               placeholder="服务器地址"
-              placeholder-class="login-input-placeholder"
               bindinput={(e: any) => setApiBase(e.detail.value)}
             />
           </view>
 
           {/* 用户名 */}
-          <view className="login-input-wrap">
-            <text className="login-input-icon">👤</text>
+          <view style={{ width: "100%", padding: "10px", backgroundColor: "#F3F4F6", borderRadius: "10px", marginTop: "12px", display: "flex", flexDirection: "row", alignItems: "center" }}>
+            <text style={{ fontSize: "18px", marginRight: "8px" }}>👤</text>
             <input
-              className="login-input"
+              style={{ width: "100%", fontSize: "15px", color: "#1F2937" }}
               placeholder="用户名"
-              placeholder-class="login-input-placeholder"
               bindinput={(e: any) => setUsername(e.detail.value)}
             />
           </view>
 
           {/* 密码 */}
-          <view className="login-input-wrap">
-            <text className="login-input-icon">🔒</text>
+          <view style={{ width: "100%", padding: "10px", backgroundColor: "#F3F4F6", borderRadius: "10px", marginTop: "12px", display: "flex", flexDirection: "row", alignItems: "center" }}>
+            <text style={{ fontSize: "18px", marginRight: "8px" }}>🔒</text>
             <input
-              className="login-input"
+              style={{ width: "100%", fontSize: "15px", color: "#1F2937" }}
               type="password"
               placeholder="密码"
-              placeholder-class="login-input-placeholder"
               bindinput={(e: any) => setPassword(e.detail.value)}
             />
           </view>
 
           {mode === 'register' ? (
             <>
-              <view className="login-input-wrap">
-                <text className="login-input-icon">🔒</text>
+              <view style={{ width: "100%", padding: "10px", backgroundColor: "#F3F4F6", borderRadius: "10px", marginTop: "12px", display: "flex", flexDirection: "row", alignItems: "center" }}>
+                <text style={{ fontSize: "18px", marginRight: "8px" }}>🔒</text>
                 <input
-                  className="login-input"
+                  style={{ width: "100%", fontSize: "15px", color: "#1F2937" }}
                   type="password"
                   placeholder="确认密码"
-                  placeholder-class="login-input-placeholder"
                   bindinput={(e: any) => setConfirmPassword(e.detail.value)}
                 />
               </view>
-              <view className="login-input-wrap">
-                <text className="login-input-icon">🎟</text>
+              <view style={{ width: "100%", padding: "10px", backgroundColor: "#F3F4F6", borderRadius: "10px", marginTop: "12px", display: "flex", flexDirection: "row", alignItems: "center" }}>
+                <text style={{ fontSize: "18px", marginRight: "8px" }}>🎟</text>
                 <input
-                  className="login-input"
+                  style={{ width: "100%", fontSize: "15px", color: "#1F2937" }}
                   placeholder="邀请码(可选)"
-                  placeholder-class="login-input-placeholder"
                   bindinput={(e: any) => setInvite(e.detail.value)}
                 />
               </view>
