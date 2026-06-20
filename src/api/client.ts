@@ -57,6 +57,23 @@ function extractUserAuth(setCookie: string | null): string | null {
   return match ? match[1] : null;
 }
 
+// Lynx 运行时(PrimJS)没有全局 FormData 构造函数,不能直接 `body instanceof FormData`
+// 用 duck-typing 判断:有 append 方法 + 没有常见普通对象方法
+function isFormData(body: any): boolean {
+  if (!body) return false;
+  // 优先用 typeof 兜底(避免在没 FormData 的环境里直接引用触发 ReferenceError)
+  try {
+    return (
+      typeof body.append === 'function' &&
+      typeof body.set === 'function' &&
+      typeof body.getAll === 'function' &&
+      typeof body.entries === 'function'
+    );
+  } catch {
+    return false;
+  }
+}
+
 // 保存/读取 cookie
 export function saveAuthCookie(cookieValue: string) {
   storage.set(STORAGE_KEYS.AUTH_COOKIE, cookieValue);
@@ -103,7 +120,7 @@ export async function request<T = any>(
     headers['Cookie'] = `user_auth=${cookie}`;
   }
 
-  if (body && !(body instanceof FormData) && !headers['Content-Type']) {
+  if (body && !isFormData(body) && !headers['Content-Type']) {
     headers['Content-Type'] = 'application/json';
   }
 
@@ -124,7 +141,7 @@ export async function request<T = any>(
       body:
         body == null
           ? undefined
-          : body instanceof FormData
+          : isFormData(body)
             ? body
             : typeof body === 'string'
               ? body
