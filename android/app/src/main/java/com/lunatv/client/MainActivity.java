@@ -4,6 +4,7 @@ import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.lynx.tasm.LynxEnv;
 import com.lynx.tasm.LynxView;
 import com.lynx.tasm.LynxViewBuilder;
 import com.lynx.xelement.XElementBehaviors;
@@ -12,11 +13,12 @@ import com.lynx.xelement.XElementBehaviors;
  * LunaTV 主 Activity: 通过 LynxView 加载 assets/main.lynx.bundle。
  *
  * 流程:
- *   1. LynxViewBuilder 注入 AssetTemplateProvider
- *   2. 注册 XElementBehaviors(<input>/<textarea> 等扩展元素需要)
- *   3. builder.build() 构造 LynxView
- *   4. lynxView.renderTemplateUrl("main.lynx.bundle", "") 触发加载
- *   5. AssetTemplateProvider 从 assets 读出 bundle bytes 返回
+ *   1. LynxEnv.inst().init 初始化全局 Lynx 引擎环境
+ *   2. LynxViewBuilder 注入 AssetTemplateProvider
+ *   3. 注册 XElementBehaviors(<input>/<textarea> 等扩展元素需要)
+ *   4. builder.build() 构造 LynxView
+ *   5. lynxView.renderTemplateUrl("main.lynx.bundle", "") 触发加载
+ *   6. AssetTemplateProvider 从 assets 读出 bundle bytes 返回
  */
 public class MainActivity extends AppCompatActivity {
     private LynxView lynxView;
@@ -24,6 +26,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // 初始化 Lynx 全局环境,只需一次。Lynx 官方文档示例即在 MainActivity 调用。
+        LynxEnv.inst().init(this, null, null, null);
 
         LynxViewBuilder builder = new LynxViewBuilder();
         builder.setTemplateProvider(new AssetTemplateProvider(this));
