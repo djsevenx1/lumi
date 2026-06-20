@@ -66,10 +66,13 @@ dependencies {
     implementation 'org.lynxsdk.lynx:xelement:3.5.2'
     implementation 'org.lynxsdk.lynx:xelement-input:3.5.2'
 
-    // Lynx Service: image / log / http
+    // HTTP Service: 前端 fetch 需要这个服务,否则报 "Http Service not registered"
+    implementation 'org.lynxsdk.lynx:lynx-service-http:3.5.2'
+    implementation 'com.squareup.okhttp3:okhttp:4.9.0'
+
+    // Lynx Service: image / log
     implementation 'org.lynxsdk.lynx:lynx-service-image:3.5.2'
     implementation 'org.lynxsdk.lynx:lynx-service-log:3.5.2'
-    implementation 'org.lynxsdk.lynx:lynx-service-http:3.5.2'
 
     // image-service 默认依赖 Fresco
     implementation 'com.facebook.fresco:fresco:2.6.0'
