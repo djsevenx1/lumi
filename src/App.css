@@ -472,6 +472,8 @@
   border-radius: var(--radius-pill);
   /* Lynx 对 backdrop-filter 支持有限,改用大圆高斯 */
   opacity: 0.45;
+  /* 装饰元素不能拦截触摸事件,否则会挡住输入框点击 */
+  pointer-events: none;
 }
 
 .login-glow-purple {
