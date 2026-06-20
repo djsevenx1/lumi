@@ -6,15 +6,17 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.lynx.tasm.LynxView;
 import com.lynx.tasm.LynxViewBuilder;
+import com.lynx.xelement.XElementBehaviors;
 
 /**
  * LunaTV 主 Activity: 通过 LynxView 加载 assets/main.lynx.bundle。
  *
  * 流程:
  *   1. LynxViewBuilder 注入 AssetTemplateProvider
- *   2. builder.build() 构造 LynxView
- *   3. lynxView.renderTemplateUrl("main.lynx.bundle", "") 触发加载
- *   4. AssetTemplateProvider 从 assets 读出 bundle bytes 返回
+ *   2. 注册 XElementBehaviors(<input>/<textarea> 等扩展元素需要)
+ *   3. builder.build() 构造 LynxView
+ *   4. lynxView.renderTemplateUrl("main.lynx.bundle", "") 触发加载
+ *   5. AssetTemplateProvider 从 assets 读出 bundle bytes 返回
  */
 public class MainActivity extends AppCompatActivity {
     private LynxView lynxView;
@@ -25,6 +27,8 @@ public class MainActivity extends AppCompatActivity {
 
         LynxViewBuilder builder = new LynxViewBuilder();
         builder.setTemplateProvider(new AssetTemplateProvider(this));
+        // 注册 XElement: <input>/<textarea> 等扩展元素必须注册后才能使用
+        builder.addBehaviors(new XElementBehaviors().create());
 
         lynxView = builder.build(this);
         lynxView.setBackgroundColor(0xFF101010);

@@ -62,8 +62,9 @@ dependencies {
     implementation 'org.lynxsdk.lynx:primjs:2.15.1'
 
     // XElement: <input>/<textarea> 等内置扩展元素
-    // 官方文档:<input> 需要此依赖才能弹起键盘
+    // 官方文档:<input> 需要 xelement + xelement-input 两个依赖
     implementation 'org.lynxsdk.lynx:xelement:3.5.2'
+    implementation 'org.lynxsdk.lynx:xelement-input:3.5.2'
 
     // Lynx Service: image / log / http
     implementation 'org.lynxsdk.lynx:lynx-service-image:3.5.2'
