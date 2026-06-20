@@ -519,16 +519,6 @@
   border-color: rgba(255, 255, 255, 0.5);
 }
 
-.login-field-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #374151;
-  margin-top: 14px;
-  margin-bottom: 6px;
-  margin-left: 4px;
-  display: block;
-}
-
 .login-brand-wrap {
   align-items: center;
   margin-bottom: 20px;

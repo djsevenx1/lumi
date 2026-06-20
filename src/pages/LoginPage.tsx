@@ -152,37 +152,34 @@ export function LoginPage() {
           </view>
 
           {/* 服务器地址输入框 */}
-          <text className="login-field-label">服务器地址</text>
           <view className="login-input-wrap">
             <text className="login-input-icon">🌐</text>
             <input
               className="login-input"
-              placeholder="https://example.com"
+              placeholder="服务器地址"
               placeholder-class="login-input-placeholder"
               bindinput={(e: any) => setApiBase(e.detail.value)}
             />
           </view>
 
           {/* 用户名 */}
-          <text className="login-field-label">用户名</text>
           <view className="login-input-wrap">
             <text className="login-input-icon">👤</text>
             <input
               className="login-input"
-              placeholder="请输入用户名"
+              placeholder="用户名"
               placeholder-class="login-input-placeholder"
               bindinput={(e: any) => setUsername(e.detail.value)}
             />
           </view>
 
           {/* 密码 */}
-          <text className="login-field-label">密码</text>
           <view className="login-input-wrap">
             <text className="login-input-icon">🔒</text>
             <input
               className="login-input"
               type="password"
-              placeholder="请输入密码"
+              placeholder="密码"
               placeholder-class="login-input-placeholder"
               bindinput={(e: any) => setPassword(e.detail.value)}
             />
@@ -190,23 +187,21 @@ export function LoginPage() {
 
           {mode === 'register' ? (
             <>
-              <text className="login-field-label">确认密码</text>
               <view className="login-input-wrap">
                 <text className="login-input-icon">🔒</text>
                 <input
                   className="login-input"
                   type="password"
-                  placeholder="再次输入密码"
+                  placeholder="确认密码"
                   placeholder-class="login-input-placeholder"
                   bindinput={(e: any) => setConfirmPassword(e.detail.value)}
                 />
               </view>
-              <text className="login-field-label">邀请码(可选)</text>
               <view className="login-input-wrap">
                 <text className="login-input-icon">🎟</text>
                 <input
                   className="login-input"
-                  placeholder="如有邀请码请输入"
+                  placeholder="邀请码(可选)"
                   placeholder-class="login-input-placeholder"
                   bindinput={(e: any) => setInvite(e.detail.value)}
                 />
