@@ -111,17 +111,6 @@ export function LoginPage() {
             </text>
           </view>
 
-          {/* 服务器地址输入框 */}
-          <view className="login-input-wrap">
-            <text className="login-input-icon">🌐</text>
-            <input
-              className="login-input"
-              placeholder="服务器地址"
-              placeholder-class="login-input-placeholder"
-              bindinput={(e: any) => setApiBase(e.detail.value)}
-            />
-          </view>
-
           {/* segmented 切换登录/注册 */}
           <view className="segmented segmented-nomargin login-segmented">
             <view
@@ -160,6 +149,17 @@ export function LoginPage() {
                 注册
               </text>
             </view>
+          </view>
+
+          {/* 服务器地址输入框 */}
+          <view className="login-input-wrap">
+            <text className="login-input-icon">🌐</text>
+            <input
+              className="login-input"
+              placeholder="服务器地址"
+              placeholder-class="login-input-placeholder"
+              bindinput={(e: any) => setApiBase(e.detail.value)}
+            />
           </view>
 
           {/* 用户名 */}
