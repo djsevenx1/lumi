@@ -467,10 +467,6 @@
   );
 }
 
-.login-card-scroll {
-  flex: 1;
-}
-
 .login-glow {
   position: absolute;
   border-radius: var(--radius-pill);

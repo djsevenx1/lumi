@@ -1,6 +1,6 @@
 // 登录页 - LunaTV Web 同款
 // 紫蓝渐变背景 + 白色大圆角卡片 + 绿色 LOMI 按钮
-import { useRef, useState } from '@lynx-js/react';
+import { useState } from '@lynx-js/react';
 import { useConfig, setConfig, setAuth } from '../store';
 import { login, register } from '../api/endpoints';
 import { getAuthCookie } from '../api/client';
@@ -19,23 +19,6 @@ export function LoginPage() {
   const [invite, setInvite] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-  // 备用方案:有些 Android 版本上 scroll-view 内的 input 不会自动聚焦,
-  // 这里用 ref + bindtap 主动调用 .focus() 兜底
-  const apiRef = useRef<any>(null);
-  const userRef = useRef<any>(null);
-  const pwdRef = useRef<any>(null);
-  const pwd2Ref = useRef<any>(null);
-  const inviteRef = useRef<any>(null);
-  function focusInput(ref: any) {
-    return () => {
-      try {
-        ref.current?.focus?.();
-      } catch {
-        // 忽略,允许原生 tap-to-focus 接管
-      }
-    };
-  }
 
   async function onSubmit() {
     const trimmedBase = apiBase.trim();
@@ -114,14 +97,9 @@ export function LoginPage() {
         </view>
       </view>
 
-      {/* 卡片区域 - 可滚动 */}
-      <scroll-view
-        scroll-y
-        className="login-card-scroll"
-        enable-offset={true}
-      >
-        <view className="login-card-wrap">
-          <view className="login-card">
+      {/* 卡片区域 */}
+      <view className="login-card-wrap">
+        <view className="login-card">
           {/* 标题区域 */}
           <view className="login-brand-wrap">
             <view className="login-logo">
@@ -175,14 +153,9 @@ export function LoginPage() {
 
           {/* 服务器地址输入框 */}
           <text className="login-field-label">服务器地址</text>
-          <view
-            className="login-input-wrap"
-            bindtap={focusInput(apiRef)}
-          >
+          <view className="login-input-wrap">
             <text className="login-input-icon">🌐</text>
             <input
-              ref={apiRef}
-              key="login-api"
               className="login-input"
               placeholder="https://example.com"
               placeholder-class="login-input-placeholder"
@@ -192,14 +165,9 @@ export function LoginPage() {
 
           {/* 用户名 */}
           <text className="login-field-label">用户名</text>
-          <view
-            className="login-input-wrap"
-            bindtap={focusInput(userRef)}
-          >
+          <view className="login-input-wrap">
             <text className="login-input-icon">👤</text>
             <input
-              ref={userRef}
-              key="login-username"
               className="login-input"
               placeholder="请输入用户名"
               placeholder-class="login-input-placeholder"
@@ -209,14 +177,9 @@ export function LoginPage() {
 
           {/* 密码 */}
           <text className="login-field-label">密码</text>
-          <view
-            className="login-input-wrap"
-            bindtap={focusInput(pwdRef)}
-          >
+          <view className="login-input-wrap">
             <text className="login-input-icon">🔒</text>
             <input
-              ref={pwdRef}
-              key="login-password"
               className="login-input"
               type="password"
               placeholder="请输入密码"
@@ -228,14 +191,9 @@ export function LoginPage() {
           {mode === 'register' ? (
             <>
               <text className="login-field-label">确认密码</text>
-              <view
-                className="login-input-wrap"
-                bindtap={focusInput(pwd2Ref)}
-              >
+              <view className="login-input-wrap">
                 <text className="login-input-icon">🔒</text>
                 <input
-                  ref={pwd2Ref}
-                  key="login-confirm"
                   className="login-input"
                   type="password"
                   placeholder="再次输入密码"
@@ -244,14 +202,9 @@ export function LoginPage() {
                 />
               </view>
               <text className="login-field-label">邀请码(可选)</text>
-              <view
-                className="login-input-wrap"
-                bindtap={focusInput(inviteRef)}
-              >
+              <view className="login-input-wrap">
                 <text className="login-input-icon">🎟</text>
                 <input
-                  ref={inviteRef}
-                  key="login-invite"
                   className="login-input"
                   placeholder="如有邀请码请输入"
                   placeholder-class="login-input-placeholder"
@@ -293,9 +246,8 @@ export function LoginPage() {
               {mode === 'login' ? '立即注册' : '前往登录'}
             </text>
           </view>
-          </view>
         </view>
-      </scroll-view>
+      </view>
     </view>
   );
 }
