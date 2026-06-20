@@ -78,7 +78,7 @@ export function LoginPage() {
   if (loading) return <LoadingView text={mode === 'login' ? '登录中...' : '注册中...'} />;
 
   return (
-    <view className="login-gradient-bg">
+    <scroll-view scroll-y className="login-gradient-bg">
       {/* 装饰光晕 - 紫色 */}
       <view className="login-glow login-glow-purple" />
       {/* 装饰光晕 - 蓝色 */}
@@ -240,6 +240,6 @@ export function LoginPage() {
           </view>
         </view>
       </view>
-    </view>
+    </scroll-view>
   );
 }

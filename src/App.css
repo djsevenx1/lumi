@@ -455,6 +455,8 @@
 /* ====== 登录页(LunaTV 紫蓝渐变背景 + 白色大圆角卡片) ====== */
 .login-gradient-bg {
   flex: 1;
+  display: flex;
+  flex-direction: column;
   position: relative;
   background-color: #E0E7FF;
   background-image: linear-gradient(
@@ -463,7 +465,6 @@
     #DBEAFE 50%,
     #FCE7F3 100%
   );
-  overflow: hidden;
 }
 
 .login-glow {
