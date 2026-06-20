@@ -157,7 +157,7 @@ export function LoginPage() {
             <text className="login-input-icon">🌐</text>
             <input
               className="login-input"
-              value=""
+
               bindinput={(e: any) => setApiBase(e.detail.value)}
             />
           </view>
@@ -168,7 +168,7 @@ export function LoginPage() {
             <text className="login-input-icon">👤</text>
             <input
               className="login-input"
-              value=""
+
               bindinput={(e: any) => setUsername(e.detail.value)}
             />
           </view>
@@ -180,7 +180,6 @@ export function LoginPage() {
             <input
               className="login-input"
               type="password"
-              value=""
               bindinput={(e: any) => setPassword(e.detail.value)}
             />
           </view>
@@ -193,7 +192,6 @@ export function LoginPage() {
                 <input
                   className="login-input"
                   type="password"
-                  value=""
                   bindinput={(e: any) => setConfirmPassword(e.detail.value)}
                 />
               </view>
@@ -202,7 +200,6 @@ export function LoginPage() {
                 <text className="login-input-icon">🎟</text>
                 <input
                   className="login-input"
-                  value=""
                   bindinput={(e: any) => setInvite(e.detail.value)}
                 />
               </view>
