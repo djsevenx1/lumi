@@ -156,8 +156,10 @@ export function LoginPage() {
           <view className="login-input-wrap">
             <text className="login-input-icon">🌐</text>
             <input
+              key="login-api"
               className="login-input"
-
+              placeholder="https://example.com"
+              placeholder-class="login-input-placeholder"
               bindinput={(e: any) => setApiBase(e.detail.value)}
             />
           </view>
@@ -167,8 +169,10 @@ export function LoginPage() {
           <view className="login-input-wrap">
             <text className="login-input-icon">👤</text>
             <input
+              key="login-username"
               className="login-input"
-
+              placeholder="请输入用户名"
+              placeholder-class="login-input-placeholder"
               bindinput={(e: any) => setUsername(e.detail.value)}
             />
           </view>
@@ -178,8 +182,11 @@ export function LoginPage() {
           <view className="login-input-wrap">
             <text className="login-input-icon">🔒</text>
             <input
+              key="login-password"
               className="login-input"
               type="password"
+              placeholder="请输入密码"
+              placeholder-class="login-input-placeholder"
               bindinput={(e: any) => setPassword(e.detail.value)}
             />
           </view>
@@ -190,8 +197,11 @@ export function LoginPage() {
               <view className="login-input-wrap">
                 <text className="login-input-icon">🔒</text>
                 <input
+                  key="login-confirm"
                   className="login-input"
                   type="password"
+                  placeholder="再次输入密码"
+                  placeholder-class="login-input-placeholder"
                   bindinput={(e: any) => setConfirmPassword(e.detail.value)}
                 />
               </view>
@@ -199,7 +209,10 @@ export function LoginPage() {
               <view className="login-input-wrap">
                 <text className="login-input-icon">🎟</text>
                 <input
+                  key="login-invite"
                   className="login-input"
+                  placeholder="如有邀请码请输入"
+                  placeholder-class="login-input-placeholder"
                   bindinput={(e: any) => setInvite(e.detail.value)}
                 />
               </view>
