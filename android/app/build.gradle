@@ -61,6 +61,10 @@ dependencies {
     implementation 'org.lynxsdk.lynx:lynx-trace:3.5.2'
     implementation 'org.lynxsdk.lynx:primjs:2.15.1'
 
+    // XElement: <input>/<textarea> 等内置扩展元素
+    // 官方文档:<input> 需要此依赖才能弹起键盘
+    implementation 'org.lynxsdk.lynx:xelement:3.5.2'
+
     // Lynx Service: image / log / http
     implementation 'org.lynxsdk.lynx:lynx-service-image:3.5.2'
     implementation 'org.lynxsdk.lynx:lynx-service-log:3.5.2'
