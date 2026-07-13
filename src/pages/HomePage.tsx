@@ -1,13 +1,12 @@
-// 首页 - LunaTV Web 同款
-// 问候渐变卡 + 3 段 CapsuleSwitch(首页/收藏夹/想看) + 横向滚动
+// 首页 - 改造:数据全部来自本地,无 apiBase / 鉴权
 import { useEffect, useState, useCallback, useMemo } from '@lynx-js/react';
 import { useConfig, useAuth, getRecordsLocal, getFavoritesLocal } from '../store';
-import { doubanHot } from '../api/endpoints';
+import { doubanHot, listByCategory } from '../api/local';
 import { navigate } from '../lib/router';
 import { VideoCard, HorizontalList } from '../components/VideoCard';
-import { LoadingView, ErrorView } from '../components/Common';
+import { LoadingView } from '../components/Common';
 import { CapsuleSwitch } from '../components/CapsuleSwitch';
-import type { SearchResult, DoubanItem, PlayRecord } from '../api/types';
+import type { SearchResult, PlayRecord } from '../api/types';
 
 type HomeTab = 'home' | 'fav' | 'wish';
 
@@ -27,9 +26,9 @@ export function HomePage() {
   const [hotTv, setHotTv] = useState<SearchResult[]>([]);
   const [hotVariety, setHotVariety] = useState<SearchResult[]>([]);
   const [hotAnime, setHotAnime] = useState<SearchResult[]>([]);
+  const [wishList, setWishList] = useState<SearchResult[]>([]);
 
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [records, setRecords] = useState<PlayRecord[]>([]);
   const [favorites, setFavorites] = useState(getFavoritesLocal());
 
@@ -46,83 +45,44 @@ export function HomePage() {
   }, [auth.user]);
 
   const load = useCallback(async () => {
-    if (!config.apiBase) {
-      setError('请先在设置中配置 LunaTV 服务地址');
-      setLoading(false);
-      return;
-    }
     setLoading(true);
-    setError('');
     try {
-      const toCard = (it: DoubanItem, source_name = '豆瓣'): any => ({
-        id: it.id,
-        title: it.title,
-        poster: it.poster,
-        year: it.year,
-        rate: it.rate,
-        source: '',
-        source_name,
-      });
-      // 并行请求,但失败时记录到 partialErr
-      const partialErr: string[] = [];
-      const safe = async (
-        label: string,
-        p: Promise<any>,
-      ): Promise<DoubanItem[]> => {
-        try {
-          const r = await p;
-          return r?.list || [];
-        } catch (e: any) {
-          partialErr.push(`${label}: ${e?.message || '失败'}`);
-          return [];
-        }
-      };
-      const [m, t, v, a] = await Promise.all([
-        safe('电影', doubanHot(config.apiBase, 'movie', '热门', 12)),
-        safe('剧集', doubanHot(config.apiBase, 'tv', '热门', 12)),
-        safe('综艺', doubanHot(config.apiBase, 'tv', '综艺', 12)),
-        safe('动漫', doubanHot(config.apiBase, 'tv', '动漫', 12)),
+      // 全部从本地数据拿,无网络
+      const [m, t, v, a, w] = await Promise.all([
+        doubanHot('movie', '热门', 12),
+        doubanHot('tv', '热门', 12),
+        listByCategory('variety', 12),
+        listByCategory('anime', 12),
+        listByCategory('short', 12),
       ]);
-      setHotMovie(m.map((x) => toCard(x)));
-      setHotTv(t.map((x) => toCard(x)));
-      setHotVariety(v.map((x) => toCard(x)));
-      setHotAnime(a.map((x) => toCard(x)));
+      const toCard = (r: any): SearchResult => ({
+        id: r.id,
+        title: r.title,
+        poster: r.poster,
+        year: r.year,
+        rate: r.rate,
+        source: r.source,
+        source_name: r.source_name,
+      });
+      setHotMovie(m.list.map(toCard));
+      setHotTv(t.list.map(toCard));
+      setHotVariety(v.results.map(toCard));
+      setHotAnime(a.results.map(toCard));
+      setWishList(w.results.map(toCard));
       setRecords(getRecordsLocal());
       setFavorites(getFavoritesLocal());
-      // 全部都失败时才算错误
-      if (m.length === 0 && t.length === 0 && v.length === 0 && a.length === 0) {
-        if (partialErr.length > 0) {
-          setError(partialErr[0] + (partialErr.length > 1 ? ` 等${partialErr.length}项` : ''));
-        }
-      }
-    } catch (e: any) {
-      setError(e?.message || '加载失败');
+    } catch {
+      // 本地数据无失败可能,ignore
     } finally {
       setLoading(false);
     }
-  }, [config.apiBase]);
+  }, []);
 
   useEffect(() => {
     load();
   }, [load]);
 
   if (loading) return <LoadingView text="加载首页内容..." />;
-  if (error && tab === 'home') {
-    return (
-      <view>
-        <ErrorView message={error} onRetry={load} />
-        <view style={{ padding: 16 }}>
-          <view
-            bindtap={() => navigate({ name: 'settings' })}
-            className="detail-btn-primary"
-            style={{ alignSelf: 'flex-start' }}
-          >
-            <text className="detail-btn-primary-text">去配置</text>
-          </view>
-        </view>
-      </view>
-    );
-  }
 
   // 渲染"首页"tab 内容
   function renderHome() {
@@ -236,15 +196,38 @@ export function HomePage() {
     );
   }
 
-  // 渲染"想看"tab 内容(暂作空状态,LunaTV 远端同步需登录)
+  // 渲染"想看"tab 内容(本地短剧充当"想看"清单)
   function renderWish() {
+    if (wishList.length === 0) {
+      return (
+        <view className="home-fav-empty">
+          <text className="home-fav-empty-icon">🔔</text>
+          <text className="home-fav-empty-title">想看清单为空</text>
+          <text className="home-fav-empty-sub">浏览短剧分类看看</text>
+        </view>
+      );
+    }
     return (
-      <view className="home-fav-empty">
-        <text className="home-fav-empty-icon">🔔</text>
-        <text className="home-fav-empty-title">想看清单为空</text>
-        <text className="home-fav-empty-sub">
-          标记"想看"的影片将出现在这里
-        </text>
+      <view>
+        <view className="home-fav-grid">
+          {wishList.map((w, i) => (
+            <view key={`${w.id}-${i}`} className="home-fav-cell">
+              <VideoCard
+                data={{
+                  id: w.id,
+                  title: w.title,
+                  poster: w.poster,
+                  source: w.source,
+                  source_name: w.source_name || '短剧',
+                  year: w.year,
+                  remarks: w.remarks,
+                }}
+                width="normal"
+              />
+            </view>
+          ))}
+        </view>
+        <view style={{ height: 32 }} />
       </view>
     );
   }
@@ -253,7 +236,7 @@ export function HomePage() {
     <scroll-view scroll-y className="page">
       {/* 顶栏 */}
       <view className="app-header">
-        <text className="app-title">LunaTV</text>
+        <text className="app-title">{config.siteName || 'LunaTV'}</text>
         <view className="app-header-actions">
           <view
             className="icon-btn"
@@ -270,7 +253,7 @@ export function HomePage() {
         </view>
       </view>
 
-      {/* 问候渐变卡 - LunaTV:from-blue-500/90 via-purple-500/90 to-pink-500/90 */}
+      {/* 问候渐变卡 */}
       <view className="greeting-card">
         <view className="greeting-inner">
           <view className="greeting-content">
@@ -279,7 +262,7 @@ export function HomePage() {
               {username ? ',' : ''}
               {username ? <text className="greeting-username">{username}</text> : null} 👋
             </text>
-            <text className="greeting-sub">发现更多精彩影视内容 ✨</text>
+            <text className="greeting-sub">本地精选影视内容 ✨</text>
           </view>
           <view className="greeting-icon">
             <text className="greeting-icon-text">🎬</text>

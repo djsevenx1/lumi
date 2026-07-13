@@ -1,12 +1,12 @@
 // 全局状态(轻量 context-less 实现)
+// 改造:移除鉴权/cookie 相关逻辑,只保留本地展示与持久化
 // 用全局单例 + 订阅模型,避免引入额外依赖
 
 import { useEffect, useState } from '@lynx-js/react';
 import { storage } from '../lib/storage';
 import { STORAGE_KEYS, defaultConfig, type AppConfig } from '../lib/config';
 import { loadConfig, saveConfig } from '../lib/storage';
-import { getAuthCookie, clearAuthCookie, saveAuthCookie } from '../api/client';
-import type { Favorite, PlayRecord, User } from '../api/types';
+import type { Favorite, PlayRecord } from '../api/types';
 
 // ====== 配置 ======
 type ConfigListener = (c: AppConfig) => void;
@@ -33,55 +33,37 @@ export function useConfig(): [AppConfig, (c: AppConfig) => void] {
   return [c, setConfig];
 }
 
-// ====== 登录态(cookie 鉴权) ======
-type AuthState = { user: User | null; cookie: string | null };
-type AuthListener = (s: AuthState) => void;
+// ====== 本地"用户"占位(无后端,固定为本地游客) ======
+// 保留 useAuth 钩子以最小化页面层改动,内部永远返回"已登录"占位
+export interface LocalUser {
+  username: string;
+  role: 'owner';
+}
+const LOCAL_USER: LocalUser = {
+  username: '本地用户',
+  role: 'owner',
+};
 
-function loadAuthState(): AuthState {
-  const cookie = getAuthCookie();
-  const user = storage.get<User>(STORAGE_KEYS.AUTH_USER) || null;
-  return { cookie, user };
+export function getAuth(): { user: LocalUser; cookie: string } {
+  return { user: LOCAL_USER, cookie: 'local' };
 }
 
-let _auth: AuthState = loadAuthState();
-const _authListeners = new Set<AuthListener>();
-
-export function getAuth() {
-  return _auth;
+export function useAuth() {
+  return [{ user: LOCAL_USER, cookie: 'local' } as {
+    user: LocalUser;
+    cookie: string;
+  }];
 }
 
-// 登录/注册成功后调用:保存 cookie + 解析 user
-export function setAuth(cookie: string | null) {
-  if (cookie) {
-    saveAuthCookie(cookie);
-  } else {
-    clearAuthCookie();
-  }
-  _auth = loadAuthState();
-  _authListeners.forEach((l) => l(_auth));
+// 旧接口占位(避免被改页面之外仍有引用时崩溃)
+export function setAuth(_cookie: string | null) {
+  /* noop: 本地模式无鉴权 */
 }
-
-// 退出
 export function clearAuth() {
-  clearAuthCookie();
-  _auth = { cookie: null, user: null };
-  _authListeners.forEach((l) => l(_auth));
+  /* noop */
 }
 
-export function useAuth(): [AuthState, typeof setAuth] {
-  const [a, setA] = useState<AuthState>(_auth);
-  useEffect(() => {
-    const l = (na: AuthState) => setA(na);
-    _authListeners.add(l);
-    return () => {
-      _authListeners.delete(l);
-    };
-  }, []);
-  return [a, setAuth];
-}
-
-// ====== 收藏(本地缓存 + 服务端同步) ======
-// 后端返回 Record<string, Favorite>,本地转为数组
+// ====== 收藏(纯本地) ======
 let _favorites: Favorite[] =
   storage.get<Favorite[]>(STORAGE_KEYS.FAVORITES_CACHE) || [];
 const _favListeners = new Set<() => void>();
@@ -96,7 +78,7 @@ export function setFavoritesLocal(list: Favorite[]) {
   _favListeners.forEach((l) => l());
 }
 
-// 从后端 Record<string, Favorite> 转为数组
+// 旧接口占位(原后端同步)
 export function setFavoritesFromMap(map: Record<string, Favorite>) {
   const list = Object.entries(map).map(([key, fav]) => ({
     ...fav,
@@ -121,7 +103,7 @@ export function useFavorites(): [Favorite[], () => void] {
   return [_favorites, () => force((x) => x + 1)];
 }
 
-// ====== 播放记录 ======
+// ====== 播放记录(纯本地) ======
 let _records: PlayRecord[] =
   storage.get<PlayRecord[]>(STORAGE_KEYS.PLAY_RECORDS_CACHE) || [];
 const _recListeners = new Set<() => void>();
@@ -136,13 +118,12 @@ export function setRecordsLocal(list: PlayRecord[]) {
   _recListeners.forEach((l) => l());
 }
 
-// 从后端 Record<string, PlayRecord> 转为数组
+// 旧接口占位
 export function setRecordsFromMap(map: Record<string, PlayRecord>) {
   const list = Object.entries(map).map(([key, rec]) => ({
     ...rec,
     key,
   }));
-  // 按 updatedAt 降序
   list.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
   setRecordsLocal(list);
 }

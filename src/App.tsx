@@ -1,4 +1,4 @@
-// 应用主壳 - 路由分发 + 底部 Tab Bar
+// 应用主壳 - 改造:不再有"未配置后端" / "未登录"自动跳转
 import { useRoute, isTabRoute, navigate } from './lib/router';
 import { TabBar } from './components/TabBar';
 import { HomePage } from './pages/HomePage';
@@ -9,25 +9,14 @@ import { MyPage } from './pages/MyPage';
 import { LoginPage } from './pages/LoginPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { CategoryPage } from './pages/CategoryPage';
-import { useConfig, useAuth } from './store';
-import { useEffect } from '@lynx-js/react';
 import './App.css';
 
 export function App() {
   const [route] = useRoute();
-  const [config] = useConfig();
-  const [auth] = useAuth();
 
-  // 启动引导:
-  // 1. 未配置后端 -> 设置页
-  // 2. 已配置但未登录 -> 登录页
-  useEffect(() => {
-    if (!config.apiBase) {
-      navigate({ name: 'settings' });
-    } else if (!auth.cookie) {
-      navigate({ name: 'login' });
-    }
-  }, []);
+  // 本地版:启动后默认在首页,不再做强制重定向
+  // 保留 effect 占位以便后续接 onboarding
+  // useEffect(() => {}, []);
 
   function renderRoute() {
     switch (route.name) {

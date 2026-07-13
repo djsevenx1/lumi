@@ -1,24 +1,18 @@
 // 全局配置
-// 用户可在首次启动时填入自己的 LunaTV 服务地址
+// 改造:不再有 apiBase / 鉴权相关字段,只保留展示与持久化 key
 
 export interface AppConfig {
-  apiBase: string; // LunaTV 后端服务地址,如 https://moontv.example.com
-  siteName: string; // 站点名称
-  enableDouban: boolean; // 是否启用豆瓣
-  enableLogin: boolean; // 是否启用登录
+  siteName: string; // 站点名称(显示在顶栏)
+  enableDouban: boolean; // 保留字段以兼容旧逻辑,本地模式无意义
 }
 
 export const defaultConfig: AppConfig = {
-  apiBase: 'https://ys.fn1.xx.kg', // 默认 LunaTV 后端地址,首次启动自动配置
   siteName: 'LunaTV',
   enableDouban: true,
-  enableLogin: true,
 };
 
 export const STORAGE_KEYS = {
   CONFIG: 'lunatv:config',
-  AUTH_COOKIE: 'lunatv:auth_cookie', // user_auth cookie 值
-  AUTH_USER: 'lunatv:auth_user',
   FAVORITES_CACHE: 'lunatv:favorites_cache',
   PLAY_RECORDS_CACHE: 'lunatv:playrecords_cache',
   HISTORY: 'lunatv:history',
