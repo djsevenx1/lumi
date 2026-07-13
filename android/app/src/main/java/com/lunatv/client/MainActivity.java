@@ -28,7 +28,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         // 初始化 Lynx 全局环境,只需一次。Lynx 官方文档示例即在 MainActivity 调用。
-        LynxEnv.inst().init(this, null, null, null);
+        // init 第一个参数需要 Application,所以传 getApplication() 而不是 this。
+        LynxEnv.inst().init(getApplication(), null, null, null);
 
         LynxViewBuilder builder = new LynxViewBuilder();
         builder.setTemplateProvider(new AssetTemplateProvider(this));
