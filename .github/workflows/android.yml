@@ -3,12 +3,13 @@ name: Android
 on:
   push:
     branches: [main, master, develop]
+    tags: ['v*']
   pull_request:
     branches: [main, master, develop]
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build-android:
@@ -94,3 +95,16 @@ jobs:
           path: android/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
           retention-days: 14
+
+      # ====== Tag 推送时自动发 GitHub Release ======
+      - name: Publish GitHub Release (on tag)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          generate_release_notes: true
+          files: |
+            android/app/build/outputs/apk/debug/*.apk
+          fail_on_unmatched_files: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
