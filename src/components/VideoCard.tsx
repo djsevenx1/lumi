@@ -1,7 +1,5 @@
-// 视频卡片 - Selene 风格
-// 评分徽章(粉/金/灰) + 集数角标(绿色) + 进度条 + 来源标签("豆瓣资源")
+// 视频卡片 - 改造:海报直接用原始 URL,不再走后端 image-proxy
 import { navigate } from '../lib/router';
-import { imageProxyUrl, getConfig } from '../api/endpoints-helper';
 import type { SearchResult, DoubanItem } from '../api/types';
 
 type CardData = {
@@ -48,10 +46,7 @@ export function VideoCard({ data, width = 'normal' }: Props) {
     navigate({ name: 'detail', source: data.source, id: data.id });
   }
 
-  const cfg = getConfig();
-  const poster = data.poster
-    ? imageProxyUrl(cfg.apiBase, data.poster, 'https://movie.douban.com/')
-    : '';
+  const poster = data.poster || '';
 
   const ratingClass = getRatingClass(data.rate);
   const remarksClass = getRemarksClass(data.remarks);

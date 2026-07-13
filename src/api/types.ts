@@ -31,6 +31,7 @@ export interface SearchResult {
   type_name?: string; // 如 "国产动漫"
   douban_id?: number;
   remarks?: string; // 如 "更新至72集"
+  rate?: string; // 评分(本地数据扩展字段)
 }
 
 export interface SearchResponse {

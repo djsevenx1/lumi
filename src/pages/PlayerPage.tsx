@@ -1,7 +1,11 @@
-// 播放器页 - 从 detail 获取 episodes 直链 + 自定义控件
+// 播放器页 - 改造:本地数据,记录仅写本地
 import { useEffect, useState, useRef, useCallback } from '@lynx-js/react';
-import { useConfig, setRecordsLocal, getRecordsLocal, usePlayRecords, getAuth } from '../store';
-import { detail, savePlayRecord } from '../api/endpoints';
+import {
+  setRecordsLocal,
+  getRecordsLocal,
+  usePlayRecords,
+} from '../store';
+import { detail as localDetail } from '../api/local';
 import { back } from '../lib/router';
 import { LoadingView, ErrorView } from '../components/Common';
 import { VideoPlayer } from '../components/VideoPlayer';
@@ -27,7 +31,6 @@ function fmtTime(s: number): string {
 }
 
 export function PlayerPage({ source, id, episode, title, poster }: Props) {
-  const [config] = useConfig();
   const [, refreshRec] = usePlayRecords();
   const [videoUrl, setVideoUrl] = useState('');
   const [loading, setLoading] = useState(true);
@@ -41,16 +44,14 @@ export function PlayerPage({ source, id, episode, title, poster }: Props) {
   const controlsTimer = useRef<any>(null);
 
   const load = useCallback(async () => {
-    if (!config.apiBase) {
-      setError('请先配置服务地址');
-      setLoading(false);
-      return;
-    }
     setLoading(true);
     setError('');
     try {
-      // 从 detail 获取 episodes 直链(search/detail 已返回 m3u8 URL)
-      const r = await detail(config.apiBase, source, id);
+      const r = await localDetail(source, id);
+      if (!r) {
+        setError('没有可播放的集数');
+        return;
+      }
       setEpisodes(r.episodes || []);
       setSourceName(r.source_name || '');
       if (r.episodes && r.episodes.length > episode) {
@@ -65,7 +66,7 @@ export function PlayerPage({ source, id, episode, title, poster }: Props) {
     } finally {
       setLoading(false);
     }
-  }, [config.apiBase, source, id, episode]);
+  }, [source, id, episode]);
 
   useEffect(() => {
     load();
@@ -107,32 +108,6 @@ export function PlayerPage({ source, id, episode, title, poster }: Props) {
     else records.unshift(next);
     setRecordsLocal(records.slice(0, 50));
     refreshRec();
-
-    // 同步到服务端
-    const auth = getAuth();
-    if (auth.cookie && config.apiBase) {
-      savePlayRecord(config.apiBase, key, {
-        source,
-        source_name: sourceName,
-        id,
-        title: title || '',
-        poster: poster || '',
-        episodeIndex: episode,
-        episodeName: `第${episode + 1}集`,
-        playTime: currentTime,
-        totalTime: total,
-        updatedAt: Date.now(),
-      }).catch(() => {});
-    }
-  }
-
-  function toggleControls() {
-    const next = !showControls;
-    setShowControls(next);
-    if (next) {
-      if (controlsTimer.current) clearTimeout(controlsTimer.current);
-      controlsTimer.current = setTimeout(() => setShowControls(false), 4000);
-    }
   }
 
   function onEnded() {
@@ -177,7 +152,9 @@ export function PlayerPage({ source, id, episode, title, poster }: Props) {
         playing={!paused}
         onLoad={(e: any) => setDuration((e?.detail?.durationMs || 0) / 1000)}
         onEnd={onEnded}
-        onTimeUpdate={(e: any) => setCurrent((e?.detail?.positionMs || 0) / 1000)}
+        onTimeUpdate={(e: any) =>
+          setCurrent((e?.detail?.positionMs || 0) / 1000)
+        }
         onError={(e: any) => setError(e?.detail?.message || '视频加载失败')}
         style={{ width: '100%', height: '100%' }}
       />
@@ -197,7 +174,8 @@ export function PlayerPage({ source, id, episode, title, poster }: Props) {
               <view
                 className="player-progress-bar"
                 style={{
-                  width: duration > 0 ? `${(current / duration) * 100}%` : '0%',
+                  width:
+                    duration > 0 ? `${(current / duration) * 100}%` : '0%',
                 }}
               />
             </view>

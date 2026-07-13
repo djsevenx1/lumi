@@ -1,11 +1,11 @@
-// 分类页(根据 type 浏览更多内容) - Selene 浅色风格
+// 分类页 - 改造:本地数据浏览
 import { useEffect, useState, useCallback } from '@lynx-js/react';
-import { useConfig } from '../store';
-import { doubanHot } from '../api/endpoints';
+import { listByCategory, allItems } from '../api/local';
 import { back, navigate } from '../lib/router';
 import { LoadingView, ErrorView, EmptyView } from '../components/Common';
 import { VideoCard } from '../components/VideoCard';
-import type { SearchResult, DoubanItem } from '../api/types';
+import type { SearchResult } from '../api/types';
+import type { LocalType } from '../data/content';
 
 interface Props {
   type: string;
@@ -17,10 +17,10 @@ const TYPE_LABEL: Record<string, string> = {
   anime: '动漫',
   variety: '综艺',
   short: '短剧',
+  all: '全部',
 };
 
 export function CategoryPage({ type }: Props) {
-  const [config] = useConfig();
   const [data, setData] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -28,34 +28,20 @@ export function CategoryPage({ type }: Props) {
   const label = TYPE_LABEL[type] || type;
 
   const load = useCallback(async () => {
-    if (!config.apiBase) {
-      setError('请先配置服务地址');
-      setLoading(false);
-      return;
-    }
     setLoading(true);
     setError('');
     try {
-      // douban 接口:type=movie|tv, tag=热门
-      // anime/variety 映射到 tv
-      const doubanType: 'movie' | 'tv' = type === 'movie' ? 'movie' : 'tv';
-      const r = await doubanHot(config.apiBase, doubanType, '热门', 30);
-      const list: SearchResult[] = r.list.map((it: DoubanItem) => ({
-        id: it.id,
-        title: it.title,
-        poster: it.poster,
-        year: it.year,
-        rate: it.rate,
-        source: '',
-        source_name: '豆瓣',
-      }));
-      setData(list);
+      const r =
+        type === 'all'
+          ? await allItems()
+          : await listByCategory(type as LocalType, 100);
+      setData(r.results || []);
     } catch (e: any) {
       setError(e?.message || '加载失败');
     } finally {
       setLoading(false);
     }
-  }, [config.apiBase, type]);
+  }, [type]);
 
   useEffect(() => {
     load();
@@ -84,7 +70,9 @@ export function CategoryPage({ type }: Props) {
               <view
                 key={`${d.source}-${d.id}-${i}`}
                 className="category-cell"
-                bindtap={() => navigate({ name: 'detail', source: d.source, id: d.id })}
+                bindtap={() =>
+                  navigate({ name: 'detail', source: d.source, id: d.id })
+                }
               >
                 <VideoCard data={d as any} />
               </view>

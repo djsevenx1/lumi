@@ -1,8 +1,11 @@
-// 详情页 - 简介 + 集数 + 收藏/播放 - Selene 浅色风格
+// 详情页 - 改造:本地数据,无鉴权
 import { useEffect, useState, useCallback } from '@lynx-js/react';
-import { useConfig, useFavorites, isFavoritedLocal, setFavoritesLocal, getAuth } from '../store';
-import { detail, addFavorite, removeFavorite } from '../api/endpoints';
-import { imageProxyUrl } from '../api/endpoints-helper';
+import {
+  useFavorites,
+  isFavoritedLocal,
+  setFavoritesLocal,
+} from '../store';
+import { detail as localDetail } from '../api/local';
 import { back, navigate } from '../lib/router';
 import { LoadingView, ErrorView } from '../components/Common';
 import type { DetailItem } from '../api/types';
@@ -13,7 +16,6 @@ interface Props {
 }
 
 export function DetailPage({ source, id }: Props) {
-  const [config] = useConfig();
   const [favorites, refresh] = useFavorites();
   const [data, setData] = useState<DetailItem | null>(null);
   const [loading, setLoading] = useState(true);
@@ -21,56 +23,46 @@ export function DetailPage({ source, id }: Props) {
   const [activeEpisode, setActiveEpisode] = useState(0);
 
   const load = useCallback(async () => {
-    if (!config.apiBase) {
-      setError('请先配置服务地址');
-      setLoading(false);
-      return;
-    }
     setLoading(true);
     setError('');
     try {
-      // detail 返回扁平结构
-      const r = await detail(config.apiBase, source, id);
-      setData(r);
+      const r = await localDetail(source, id);
+      if (!r) {
+        setError('未找到该内容');
+        setData(null);
+      } else {
+        setData(r);
+      }
     } catch (e: any) {
       setError(e?.message || '加载详情失败');
     } finally {
       setLoading(false);
     }
-  }, [config.apiBase, source, id]);
+  }, [source, id]);
 
   useEffect(() => {
     load();
   }, [load]);
 
-  async function toggleFavorite() {
+  function toggleFavorite() {
     if (!data) return;
     const key = `${data.source}+${data.id}`;
-    const auth = getAuth();
-    if (!auth.cookie) {
-      navigate({ name: 'login' });
-      return;
-    }
     if (isFavoritedLocal(key)) {
       // 取消
       setFavoritesLocal(favorites.filter((f) => f.key !== key));
-      try {
-        await removeFavorite(config.apiBase, key);
-      } catch {}
     } else {
-      // 添加 - favorite 必须包含 title 和 source_name
+      // 添加
       const fav = {
+        key,
         source: data.source,
         source_name: data.source_name,
         id: data.id,
         title: data.title,
         poster: data.poster,
         remarks: data.remarks || '',
-      };
-      setFavoritesLocal([{ ...fav, key }, ...favorites]);
-      try {
-        await addFavorite(config.apiBase, key, fav);
-      } catch {}
+        year: data.year,
+      } as any;
+      setFavoritesLocal([fav, ...favorites]);
     }
     refresh();
   }
@@ -110,22 +102,20 @@ export function DetailPage({ source, id }: Props) {
 
   const key = `${data.source}+${data.id}`;
   const isFav = isFavoritedLocal(key);
-  const poster = data.poster
-    ? imageProxyUrl(config.apiBase, data.poster)
-    : '';
 
   // 集数名称:优先用 episodes_titles,否则用序号
-  const episodeNames = data.episodes_titles && data.episodes_titles.length > 0
-    ? data.episodes_titles
-    : data.episodes.map((_, i) => `第${i + 1}集`);
+  const episodeNames =
+    data.episodes_titles && data.episodes_titles.length > 0
+      ? data.episodes_titles
+      : data.episodes.map((_, i) => `第${i + 1}集`);
 
   return (
     <scroll-view scroll-y className="page page-no-tabbar">
       {/* Hero */}
       <view className="detail-hero">
-        {poster ? (
+        {data.poster ? (
           <image
-            src={poster}
+            src={data.poster}
             className="detail-hero-image"
             mode="aspectFill"
           />
@@ -139,9 +129,9 @@ export function DetailPage({ source, id }: Props) {
       {/* 主信息 */}
       <view className="detail-info">
         <view className="detail-poster">
-          {poster ? (
+          {data.poster ? (
             <image
-              src={poster}
+              src={data.poster}
               className="detail-poster-image"
               mode="aspectFill"
             />
@@ -170,7 +160,9 @@ export function DetailPage({ source, id }: Props) {
         </view>
         <view
           className={
-            isFav ? 'detail-btn-secondary detail-btn-active' : 'detail-btn-secondary'
+            isFav
+              ? 'detail-btn-secondary detail-btn-active'
+              : 'detail-btn-secondary'
           }
           bindtap={toggleFavorite}
         >
@@ -198,7 +190,7 @@ export function DetailPage({ source, id }: Props) {
             </text>
           </view>
           <view className="episode-list">
-            {data.episodes.map((ep, i) => (
+            {data.episodes.map((_ep, i) => (
               <view
                 key={i}
                 className={

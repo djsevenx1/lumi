@@ -1,34 +1,28 @@
-// 设置页 - Selene 浅色风格
+// 设置页 - 改造:去掉 API 配置,只保留站点名称 / 缓存清理 / 关于
 import { useState } from '@lynx-js/react';
-import { useConfig, setConfig, useAuth, clearAuth, setFavoritesLocal, setRecordsLocal, clearSearchHistory } from '../store';
+import {
+  useConfig,
+  setConfig,
+  setFavoritesLocal,
+  setRecordsLocal,
+  clearSearchHistory,
+} from '../store';
 import { storage } from '../lib/storage';
 import { STORAGE_KEYS } from '../lib/config';
-import { back, navigate } from '../lib/router';
+import { back } from '../lib/router';
 
 export function SettingsPage() {
   const [config] = useConfig();
-  const [auth] = useAuth();
-  const [apiBase, setApiBase] = useState(config.apiBase);
   const [siteName, setSiteName] = useState(config.siteName);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
 
   function onSave() {
-    if (!apiBase.trim()) {
-      setError('服务地址不能为空');
-      return;
-    }
-    let base = apiBase.trim();
-    if (!/^https?:\/\//i.test(base)) {
-      base = 'https://' + base;
-    }
-    base = base.replace(/\/+$/, '');
     setConfig({
       ...config,
-      apiBase: base,
       siteName: siteName.trim() || 'LunaTV',
     });
-    setApiBase(base);
+    setSiteName(siteName.trim() || 'LunaTV');
     setError('');
     setSaved(true);
     setTimeout(() => setSaved(false), 1500);
@@ -43,10 +37,6 @@ export function SettingsPage() {
     setTimeout(() => setSaved(false), 1500);
   }
 
-  function onLogout() {
-    clearAuth();
-  }
-
   return (
     <scroll-view scroll-y className="page page-no-tabbar">
       {/* 顶栏 */}
@@ -58,20 +48,12 @@ export function SettingsPage() {
         <view className="settings-spacer" />
       </view>
 
-      {/* 服务配置 */}
+      {/* 站点名称 */}
       <view className="settings-section">
-        <text>服务配置</text>
+        <text>站点名称</text>
         <text className="settings-hint">
-          输入 LunaTV 后端服务地址(包含协议,不包含尾部斜杠)
+          显示在首页顶栏,本地保存
         </text>
-        <input
-          key="input-api"
-          className="input"
-          placeholder="https://moontv.example.com"
-          placeholder-class="input-placeholder"
-          bindinput={(e: any) => setApiBase(e.detail.value)}
-        />
-        <view style={{ height: 8 }} />
         <input
           key="input-name"
           className="input"
@@ -93,34 +75,6 @@ export function SettingsPage() {
         </view>
       </view>
 
-      {/* 账号 */}
-      <view className="settings-section">
-        <text>账号</text>
-        <view className="settings-item" bindtap={() => navigate({ name: 'login' })}>
-          <text className="settings-item-label">
-            {auth.cookie ? '已登录账号' : '未登录 · 去登录'}
-          </text>
-          <view className="settings-item-row">
-            <text
-              className={
-                auth.cookie
-                  ? 'settings-item-value settings-item-value-online'
-                  : 'settings-item-value settings-item-value-offline'
-              }
-            >
-              {auth.user?.username || '未登录'}
-            </text>
-            <text className="settings-item-arrow">›</text>
-          </view>
-        </view>
-        {auth.cookie ? (
-          <view className="settings-item" bindtap={onLogout}>
-            <text className="settings-item-label settings-item-danger">退出登录</text>
-            <text className="settings-item-arrow">›</text>
-          </view>
-        ) : null}
-      </view>
-
       {/* 缓存 */}
       <view className="settings-section">
         <text>缓存</text>
@@ -139,15 +93,15 @@ export function SettingsPage() {
         </view>
         <view className="settings-item">
           <text className="settings-item-label">版本</text>
-          <text className="settings-item-value">0.1.0</text>
+          <text className="settings-item-value">0.2.0-local</text>
         </view>
         <view className="settings-item">
           <text className="settings-item-label">UI 框架</text>
           <text className="settings-item-value">Lynx + ReactLynx</text>
         </view>
         <view className="settings-item">
-          <text className="settings-item-label">后端</text>
-          <text className="settings-item-value">LunaTV (兼容 MoonTV)</text>
+          <text className="settings-item-label">数据模式</text>
+          <text className="settings-item-value">本地内置(无后端)</text>
         </view>
         <view className="settings-item">
           <text className="settings-item-label">设计参考</text>

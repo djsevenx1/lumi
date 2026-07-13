@@ -1,21 +1,21 @@
-// 搜索页 - Selene 浅色风格
-// 列表式搜索结果卡片 + 搜索历史
+// 搜索页 - 改造:本地模糊搜索,无鉴权
 import { useEffect, useState, useCallback, useRef } from '@lynx-js/react';
-import { useConfig, useSearchHistory, pushSearchHistory, clearSearchHistory, getAuth } from '../store';
-import { search } from '../api/endpoints';
-import { imageProxyUrl } from '../api/endpoints-helper';
-import { EmptyView, ErrorView, LoadingView } from '../components/Common';
+import {
+  useSearchHistory,
+  pushSearchHistory,
+  clearSearchHistory,
+} from '../store';
+import { search as localSearch } from '../api/local';
+import { EmptyView, LoadingView } from '../components/Common';
 import { SearchBar } from '../components/SearchBar';
 import { navigate } from '../lib/router';
 import type { SearchResult } from '../api/types';
 
 export function SearchPage() {
-  const [config] = useConfig();
   const [history, refresh] = useSearchHistory();
   const [keyword, setKeyword] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [searched, setSearched] = useState(false);
   const debounceRef = useRef<any>(null);
 
@@ -27,43 +27,34 @@ export function SearchPage() {
       return;
     }
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => doSearch(keyword), 500);
+    debounceRef.current = setTimeout(() => doSearch(keyword), 250);
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
   }, [keyword]);
 
   async function doSearch(q: string) {
-    if (!q.trim() || !config.apiBase) return;
-    const auth = getAuth();
-    if (!auth.cookie) {
-      setError('请先登录后再搜索');
-      setSearched(true);
-      return;
-    }
+    if (!q.trim()) return;
     setLoading(true);
-    setError('');
     try {
-      const r = await search(config.apiBase, q);
+      const r = await localSearch(q);
       setResults(r.results || []);
       setSearched(true);
-    } catch (e: any) {
-      setError(e?.message || '搜索失败');
+    } catch {
+      setResults([]);
+      setSearched(true);
     } finally {
       setLoading(false);
     }
   }
 
-  const onSubmit = useCallback(
-    (q: string) => {
-      if (q.trim()) {
-        pushSearchHistory(q.trim());
-        refresh();
-      }
-      doSearch(q);
-    },
-    [config.apiBase],
-  );
+  const onSubmit = useCallback((q: string) => {
+    if (q.trim()) {
+      pushSearchHistory(q.trim());
+      refresh();
+    }
+    doSearch(q);
+  }, []);
 
   function onPickHistory(q: string) {
     setKeyword(q);
@@ -93,8 +84,6 @@ export function SearchPage() {
       {/* 结果区 */}
       {loading ? (
         <LoadingView text="搜索中..." />
-      ) : error ? (
-        <ErrorView message={error} />
       ) : !keyword ? (
         // 未输入:显示历史
         <view>
@@ -152,7 +141,7 @@ export function SearchPage() {
               <view className="search-result-poster">
                 {r.poster ? (
                   <image
-                    src={imageProxyUrl(config.apiBase, r.poster)}
+                    src={r.poster}
                     className="search-result-poster-image"
                     mode="aspectFill"
                   />
