@@ -1,5 +1,6 @@
 plugins {
     id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
 }
 
 android {
@@ -83,6 +84,13 @@ dependencies {
 
     // http-service 默认依赖 OkHttp
     implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+
+    // @sigx/lynx-video(<video-player> 元素):media3 / ExoPlayer
+    implementation 'androidx.media3:media3-exoplayer:1.4.1'
+    implementation 'androidx.media3:media3-ui:1.4.0'
+
+    // Kotlin stdlib(VideoPlayerUI 是 .kt)
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.9.24'
 }
 
 // 把项目根 dist/main.lynx.bundle 复制到 assets/main.lynx.bundle
