@@ -40,27 +40,25 @@ let _storage: StorageLike | null = null;
 
 function getStorage(): StorageLike {
   if (_storage) return _storage;
-  if (typeof NativeModules !== 'undefined') {
-    if (NativeModules.Storage) {
-      _storage = NativeModules.Storage;
+  let NativeModulesRef: any;
+  try {
+    NativeModulesRef = (globalThis as any)?.NativeModules;
+  } catch {
+    NativeModulesRef = undefined;
+  }
+  if (NativeModulesRef) {
+    if (NativeModulesRef.Storage) {
+      _storage = NativeModulesRef.Storage;
       return _storage;
     }
-    if (NativeModules.LynxStorage) {
-      _storage = NativeModules.LynxStorage;
+    if (NativeModulesRef.LynxStorage) {
+      _storage = NativeModulesRef.LynxStorage;
       return _storage;
     }
   }
-  // Web / 沙盒预览:用 globalThis
-  if (typeof globalThis !== 'undefined') {
-    const g = globalThis as any;
-    if (!g.__lunatv_mem_storage__) {
-      g.__lunatv_mem_storage__ = new MemoryStorage();
-    }
-    _storage = g.__lunatv_mem_storage__;
-    return _storage!;
-  }
+  // 兜底: Lynx 沙盒 / Web 都安全降级到内存存储
   _storage = new MemoryStorage();
-  return _storage!;
+  return _storage;
 }
 
 export const storage = {

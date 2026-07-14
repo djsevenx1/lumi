@@ -25,13 +25,12 @@ import type { FlappyEngine, FlappyOptions } from './lib/flappy.js'
 export function useFlappy(
   options?: FlappyOptions,
 ): [number, () => void] {
-  const [y, setY] = useState(0)
   const engineRef = useRef<FlappyEngine | null>(null)
+  const [y, setY] = useState(0)
 
+  // 修复: 必须在 useState 之后调用, 保持 hooks 顺序稳定
   if (engineRef.current == null) {
-    engineRef.current = createFlappy((newY) => {
-      setY(newY)
-    }, options)
+    engineRef.current = createFlappy(setY, options)
   }
 
   useEffect(() => {

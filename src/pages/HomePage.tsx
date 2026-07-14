@@ -42,7 +42,8 @@ export function HomePage() {
 
   const username = useMemo(() => {
     return auth.user?.username || '';
-  }, [auth.user]);
+    // 修复: useAuth 返回静态对象, 不参与订阅, 依赖空数组避免每次 auth 引用变化重算
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
