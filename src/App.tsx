@@ -1,60 +1,13 @@
-// 应用主壳 - 改造:不再有"未配置后端" / "未登录"自动跳转
-import { useRoute, isTabRoute, navigate } from './lib/router';
-import { TabBar } from './components/TabBar';
-import { HomePage } from './pages/HomePage';
-import { SearchPage } from './pages/SearchPage';
-import { DetailPage } from './pages/DetailPage';
-import { PlayerPage } from './pages/PlayerPage';
-import { MyPage } from './pages/MyPage';
-import { LoginPage } from './pages/LoginPage';
-import { SettingsPage } from './pages/SettingsPage';
-import { CategoryPage } from './pages/CategoryPage';
-import './App.css';
+// v0.2.3 主壳 - 极度简化,只测 Lynx 引擎能否起来
+import { root } from '@lynx-js/react';
 
-export function App() {
-  const [route] = useRoute();
-
-  // 本地版:启动后默认在首页,不再做强制重定向
-  // 保留 effect 占位以便后续接 onboarding
-  // useEffect(() => {}, []);
-
-  function renderRoute() {
-    switch (route.name) {
-      case 'home':
-        return <HomePage />;
-      case 'search':
-        return <SearchPage />;
-      case 'my':
-        return <MyPage />;
-      case 'settings':
-        return <SettingsPage />;
-      case 'login':
-        return <LoginPage />;
-      case 'detail':
-        return <DetailPage source={route.source} id={route.id} />;
-      case 'play':
-        return (
-          <PlayerPage
-            source={route.source}
-            id={route.id}
-            episode={route.episode}
-            title={route.title}
-            poster={route.poster}
-          />
-        );
-      case 'category':
-        return <CategoryPage type={route.type} />;
-      default:
-        return <HomePage />;
-    }
-  }
-
-  const showTab = isTabRoute(route);
-
+function Hello() {
   return (
-    <view className="app-root">
-      {renderRoute()}
-      {showTab ? <TabBar /> : null}
+    <view style="flex:1;background:#0a0a0a;justify-content:center;align-items:center;">
+      <text style="color:#42b883;font-size:36px;font-weight:bold;">Lumi OK</text>
+      <text style="color:#888;font-size:18px;margin-top:18px;">v0.2.3 boot</text>
     </view>
   );
 }
+
+root.render(<Hello />);
