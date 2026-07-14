@@ -1,7 +1,7 @@
 // v0.2.3 主壳 - 极度简化,只测 Lynx 引擎能否起来
 import { root } from '@lynx-js/react';
 
-function Hello() {
+export function Hello() {
   return (
     <view style="flex:1;background:#0a0a0a;justify-content:center;align-items:center;">
       <text style="color:#42b883;font-size:36px;font-weight:bold;">Lumi OK</text>
