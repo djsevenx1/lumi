@@ -1,100 +1,85 @@
-// 持久化存储包装
-// 优先用 NativeModules.Storage(原生实现,持久化),
-// 降级到 globalThis 内存存储(仅当次运行有效)
+// Lynx 存储封装 - 三层兜底(lynx storage / globalThis / 内存)
+import type { VideoSource } from './types';
 
-import { STORAGE_KEYS, defaultConfig, type AppConfig } from './config';
+const KEY_SOURCES = 'lumi.sources.v1';
 
-interface StorageLike {
-  get(key: string): string | null;
-  set(key: string, value: string): void;
-  remove(key: string): void;
-  clear(): void;
+function getBackend(): Storage | null {
+  try {
+    const candidates: any[] = [
+      (globalThis as any).lynxStorage,
+      (globalThis as any).storage,
+      (typeof globalThis !== 'undefined' ? globalThis : null),
+    ];
+    for (const c of candidates) {
+      if (c && typeof c.getItem === 'function' && typeof c.setItem === 'function') {
+        return c as Storage;
+      }
+    }
+  } catch {}
+  return null;
 }
 
-declare const NativeModules: {
-  Storage?: StorageLike;
-  LynxStorage?: StorageLike;
+const memoryStore: Record<string, string> = {};
+const memBackend = {
+  getItem: (k: string) => (k in memoryStore ? memoryStore[k] : null),
+  setItem: (k: string, v: string) => (memoryStore[k] = String(v)),
+  removeItem: (k: string) => delete memoryStore[k],
 };
 
-class MemoryStorage implements StorageLike {
-  private data = new Map<string, string>();
+function backend(): Storage {
+  return getBackend() || (memBackend as any);
+}
 
-  get(key: string): string | null {
-    return this.data.has(key) ? this.data.get(key)! : null;
-  }
-
-  set(key: string, value: string): void {
-    this.data.set(key, value);
-  }
-
-  remove(key: string): void {
-    this.data.delete(key);
-  }
-
-  clear(): void {
-    this.data.clear();
+export function loadSources(): VideoSource[] {
+  try {
+    const raw = backend().getItem(KEY_SOURCES);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr)) return [];
+    return arr.filter((s) => s && typeof s.url === 'string');
+  } catch {
+    return [];
   }
 }
 
-let _storage: StorageLike | null = null;
+export function saveSources(list: VideoSource[]) {
+  try {
+    backend().setItem(KEY_SOURCES, JSON.stringify(list));
+  } catch {}
+}
 
-function getStorage(): StorageLike {
-  if (_storage) return _storage;
-  const g: any = globalThis as any;
-  const NativeModulesRef = g && g.NativeModules;
-  if (NativeModulesRef) {
-    if (NativeModulesRef.Storage) {
-      _storage = NativeModulesRef.Storage as StorageLike;
-      return _storage;
-    }
-    if (NativeModulesRef.LynxStorage) {
-      _storage = NativeModulesRef.LynxStorage as StorageLike;
-      return _storage;
-    }
+export function addSource(name: string, url: string): { ok: boolean; msg?: string } {
+  const n = (name || '').trim();
+  const u = (url || '').trim();
+  if (!n) return { ok: false, msg: '请填写名称' };
+  if (!u) return { ok: false, msg: '请填写 URL' };
+  if (!/^https?:\/\//i.test(u)) {
+    return { ok: false, msg: 'URL 必须以 http(s):// 开头' };
   }
-  // 兜底: Lynx 沙盒 / Web 都安全降级到内存存储
-  const fallback = new MemoryStorage();
-  _storage = fallback;
-  return fallback;
+  const list = loadSources();
+  if (list.some((s) => s.url === u)) {
+    return { ok: false, msg: '该 URL 已存在' };
+  }
+  list.push({
+    id: String(Date.now()) + Math.random().toString(36).slice(2, 6),
+    name: n,
+    url: u,
+    enabled: true,
+    addedAt: Date.now(),
+  });
+  saveSources(list);
+  return { ok: true };
 }
 
-export const storage = {
-  get<T = unknown>(key: string): T | null {
-    try {
-      const raw = getStorage().get(key);
-      if (raw === null || raw === undefined) return null;
-      return JSON.parse(raw) as T;
-    } catch {
-      return null;
-    }
-  },
-  set<T = unknown>(key: string, value: T): void {
-    try {
-      getStorage().set(key, JSON.stringify(value));
-    } catch (e) {
-      console.error('storage.set error', e);
-    }
-  },
-  remove(key: string): void {
-    try {
-      getStorage().remove(key);
-    } catch (e) {
-      console.error('storage.remove error', e);
-    }
-  },
-  clear(): void {
-    try {
-      getStorage().clear();
-    } catch (e) {
-      console.error('storage.clear error', e);
-    }
-  },
-};
-
-export function loadConfig(): AppConfig {
-  return storage.get<AppConfig>(STORAGE_KEYS.CONFIG) || defaultConfig;
+export function removeSource(id: string) {
+  saveSources(loadSources().filter((s) => s.id !== id));
 }
 
-export function saveConfig(cfg: AppConfig) {
-  storage.set(STORAGE_KEYS.CONFIG, cfg);
+export function toggleSource(id: string) {
+  const list = loadSources();
+  const found = list.find((s) => s.id === id);
+  if (found) {
+    found.enabled = !found.enabled;
+    saveSources(list);
+  }
 }
