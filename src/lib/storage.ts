@@ -57,8 +57,9 @@ function getStorage(): StorageLike {
     }
   }
   // 兜底: Lynx 沙盒 / Web 都安全降级到内存存储
-  _storage = new MemoryStorage();
-  return _storage;
+  const fallback = new MemoryStorage();
+  _storage = fallback;
+  return fallback;
 }
 
 export const storage = {
