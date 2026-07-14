@@ -40,19 +40,15 @@ let _storage: StorageLike | null = null;
 
 function getStorage(): StorageLike {
   if (_storage) return _storage;
-  let NativeModulesRef: any;
-  try {
-    NativeModulesRef = (globalThis as any)?.NativeModules;
-  } catch {
-    NativeModulesRef = undefined;
-  }
+  const g: any = globalThis as any;
+  const NativeModulesRef = g && g.NativeModules;
   if (NativeModulesRef) {
     if (NativeModulesRef.Storage) {
-      _storage = NativeModulesRef.Storage;
+      _storage = NativeModulesRef.Storage as StorageLike;
       return _storage;
     }
     if (NativeModulesRef.LynxStorage) {
-      _storage = NativeModulesRef.LynxStorage;
+      _storage = NativeModulesRef.LynxStorage as StorageLike;
       return _storage;
     }
   }
