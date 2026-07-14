@@ -12,7 +12,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.lynx.tasm.LynxEnv;
 import com.lynx.tasm.LynxView;
 import com.lynx.tasm.LynxViewBuilder;
-import com.lynx.tasm.LynxViewClient;
 import com.lynx.tasm.behavior.BehaviorBundle;
 import com.lynx.xelement.XElementBehaviors;
 import com.sigx.video.VideoPlayerBehavior;
@@ -76,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
             behaviorBundle
         );
 
-        // 3. 构造 LynxView + 注册错误回调
+        // 3. 构造 LynxView
         LynxViewBuilder builder = new LynxViewBuilder();
         builder.setTemplateProvider(new AssetTemplateProvider(this));
         try {
@@ -85,22 +84,7 @@ public class MainActivity extends AppCompatActivity {
             Log.w(TAG, "addBehavior(video-player) failed", t);
         }
 
-        // 注册错误回调 -- 模板运行时错误不闪退,打到屏幕上
-        builder.setLynxViewClient(new LynxViewClient() {
-            @Override
-            public void onReceivedError(LynxView v, int code, String message) {
-                final String msg = "Lynx error: " + message + " (code=" + code + ")";
-                Log.e(TAG, msg);
-                runOnUiThread(() -> showError(msg));
-            }
-            @Override
-            public void onRuntimeError(LynxView v, String message, int code) {
-                final String msg = "Lynx runtime error: " + message + " (code=" + code + ")";
-                Log.e(TAG, msg);
-                runOnUiThread(() -> showError(msg));
-            }
-        });
-
+        // 错误通过 UncaughtExceptionHandler 在最外层接, 模板内部错误也兜底
         lynxView = builder.build(this);
         lynxView.setBackgroundColor(0xFF101010);
 
