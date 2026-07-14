@@ -109,17 +109,16 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Grant execute permission for gradlew
-        working-directory: android
-        run: chmod +x ./gradlew
+      - name: Setup Gradle (auto-generate wrapper)
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Copy Lynx bundle to assets
         working-directory: android
-        run: ./gradlew copyLynxBundle
+        run: gradle copyLynxBundle --no-daemon
 
       - name: Assemble debug APK
         working-directory: android
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
+        run: gradle assembleDebug --no-daemon --stacktrace
 
       - name: Collect APK
         working-directory: android
